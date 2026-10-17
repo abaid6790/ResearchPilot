@@ -1,0 +1,8 @@
+/* Account settings */
+
+.settings__header { margin-bottom: var(--space-5); }
+.settings__grid { display: grid; gap: var(--space-5); grid-template-columns: 1fr; }
+
+@media (min-width: 860px) {
+  .settings__grid { grid-template-columns: 1fr 1fr; align-items: start; }
+}

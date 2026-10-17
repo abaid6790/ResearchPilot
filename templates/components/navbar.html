@@ -1,0 +1,48 @@
+<header class="navbar">
+  <div class="navbar__inner">
+    <a class="brand" href="{{ url_for('dashboard.home') }}" aria-label="ResearchPilot AI home">
+      <svg class="brand__mark" viewBox="0 0 32 32" width="28" height="28" aria-hidden="true" focusable="false">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="currentColor" stroke-width="2"/>
+        <path d="M16 6l4.2 10.2L16 26l-4.2-9.8z" fill="currentColor"/>
+        <circle cx="16" cy="16" r="2" fill="var(--paper)"/>
+      </svg>
+      <span class="brand__name">ResearchPilot <span class="brand__ai">AI</span></span>
+    </a>
+
+    <div class="navbar__actions">
+      {% if current_user.is_authenticated and current_user.is_verified %}
+      <a class="button button--primary button--small navbar__new" href="{{ url_for('research.new') }}">New research</a>
+      {% endif %}
+      <button type="button" class="icon-button" data-theme-toggle aria-label="Switch between light and dark theme">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
+          <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+      {% if current_user.is_authenticated %}
+      <div class="user-menu">
+        <button type="button" class="user-menu__button" data-menu-toggle aria-expanded="false" aria-controls="user-menu-panel">
+          <span class="avatar" aria-hidden="true">{{ current_user.display_name[:1]|upper }}</span>
+          <span class="user-menu__name">{{ current_user.display_name }}</span>
+        </button>
+        <div class="user-menu__panel" id="user-menu-panel" hidden>
+          <p class="user-menu__email">{{ current_user.email }}</p>
+          {% if current_user.is_verified %}
+          <a href="{{ url_for('dashboard.index') }}">Dashboard</a>
+          <a href="{{ url_for('research.index') }}">Research projects</a>
+          <a href="{{ url_for('research.new') }}">New research</a>
+          <a href="{{ url_for('settings.profile') }}">Account settings</a>
+          {% endif %}
+          <form method="post" action="{{ url_for('auth.logout') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="user-menu__signout">Sign out</button>
+          </form>
+        </div>
+      </div>
+      {% else %}
+      <a class="button button--ghost button--small navbar__signin" href="{{ url_for('auth.login') }}">Sign in</a>
+      <a class="button button--primary button--small" href="{{ url_for('auth.register') }}">Create account</a>
+      {% endif %}
+    </div>
+  </div>
+</header>

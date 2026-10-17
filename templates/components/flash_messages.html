@@ -1,0 +1,13 @@
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div class="flash-stack" role="region" aria-label="Notifications">
+  {% for category, message in messages %}
+  {% set kind = category if category in ['success', 'error', 'warning', 'info'] else 'info' %}
+  <div class="alert alert--{{ kind }}" role="{{ 'alert' if kind in ['error', 'warning'] else 'status' }}">
+    <p class="alert__text">{{ message }}</p>
+    <button type="button" class="alert__close" data-dismiss aria-label="Dismiss message">&times;</button>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endwith %}

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Research projects - ResearchPilot AI{% endblock %}
+{% block head_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/research/list.css') }}">{% endblock %}
+
+{% block content %}
+<section>
+  <header class="list-header">
+    <div>
+      <p class="eyebrow">Research</p>
+      <h1>{{ "Archived projects" if show == "archived" else "Research projects" }}</h1>
+    </div>
+    <a class="button button--primary" href="{{ url_for('research.new') }}">New research</a>
+  </header>
+
+  <form class="list-filters" method="get" action="{{ url_for('research.index') }}" role="search">
+    <label class="visually-hidden" for="q">Search projects</label>
+    <input class="field__input" id="q" name="q" type="search" value="{{ query }}" placeholder="Search title or topic" maxlength="100">
+    <select class="field__input" name="show" aria-label="Show">
+      <option value="active" {{ "selected" if show == "active" }}>Active</option>
+      <option value="archived" {{ "selected" if show == "archived" }}>Archived</option>
+    </select>
+    <button class="button button--ghost" type="submit">Filter</button>
+  </form>
+
+  {% if projects %}
+  <ul class="project-list">
+    {% for p in projects %}
+    <li class="project-card card">
+      <div class="project-card__main">
+        <h2 class="project-card__title"><a href="{{ url_for('research.detail', public_id=p.public_id) }}">{{ p.title }}</a></h2>
+        <p class="project-card__topic">{{ p.topic|truncate(180) }}</p>
+        <p class="project-card__meta">
+          <span class="badge">{{ p.depth|capitalize }}</span>
+          {% set status = latest_status.get(p.id) %}
+          <span class="badge {{ 'badge--success' if status in ('completed',) else 'badge--warning' if status else '' }}">{{ status|replace('_', ' ')|capitalize if status else "Not started" }}</span>
+          <span>Created {{ p.created_at.strftime("%d %b %Y") }}</span>
+        </p>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% if pages > 1 %}
+  <nav class="pager" aria-label="Pages">
+    {% if page > 1 %}<a class="button button--ghost button--small" href="{{ url_for('research.index', q=query, show=show, page=page-1) }}">Previous</a>{% endif %}
+    <span>Page {{ page }} of {{ pages }}</span>
+    {% if page < pages %}<a class="button button--ghost button--small" href="{{ url_for('research.index', q=query, show=show, page=page+1) }}">Next</a>{% endif %}
+  </nav>
+  {% endif %}
+  {% else %}
+  <section class="empty-state">
+    <h2>{{ "No projects match" if query else ("Nothing archived" if show == "archived" else "No research projects yet") }}</h2>
+    <p>{{ "Try a different search." if query else "Create a project to define a question, depth and sources." }}</p>
+    {% if not query and show != "archived" %}<a class="button button--primary" href="{{ url_for('research.new') }}">Start your first research</a>{% endif %}
+  </section>
+  {% endif %}
+</section>
+{% endblock %}

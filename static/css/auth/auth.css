@@ -1,0 +1,17 @@
+/* Authentication and error page card */
+
+.auth-card {
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg);
+  padding: var(--space-6); box-shadow: var(--shadow);
+}
+.auth-card--centered { text-align: center; }
+.auth-card__title { font-size: var(--text-2xl); margin-bottom: var(--space-2); }
+.auth-card__lead { color: var(--ink-soft); margin-bottom: var(--space-5); }
+.auth-card__note { color: var(--ink-faint); font-size: var(--text-sm); margin-bottom: var(--space-4); }
+.auth-card__row { display: flex; justify-content: flex-end; margin: calc(var(--space-2) * -1) 0 var(--space-4); font-size: var(--text-sm); }
+.auth-card__footer { margin: var(--space-5) 0 0; text-align: center; color: var(--ink-soft); font-size: var(--text-sm); }
+
+@media (max-width: 520px) {
+  .auth-card { padding: var(--space-5) var(--space-4); }
+  .auth-card__title { font-size: var(--text-xl); }
+}

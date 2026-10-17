@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} - ResearchPilot AI{% endblock %}
+{% block head_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/auth/auth.css') }}">{% endblock %}
+{% block main_class %}page page--auth{% endblock %}
+
+{% block content %}
+<section class="auth-card auth-card--centered" aria-labelledby="error-title">
+  <p class="eyebrow">{% block code %}Error{% endblock %}</p>
+  <h1 id="error-title" class="auth-card__title">{{ title }}</h1>
+  <p class="auth-card__lead">{{ message }}</p>
+  <a class="button button--primary" href="{{ url_for('dashboard.home') }}">Back to start</a>
+</section>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - ResearchPilot AI{% endblock %}
+{% block head_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard/dashboard.css') }}">{% endblock %}
+
+{% block content %}
+<section class="dash-header">
+  <div>
+    <p class="eyebrow">Workspace</p>
+    <h1>Hello, {{ current_user.display_name }}</h1>
+    <p class="dash-header__lead">Define a research question, pick the depth, and keep every project in one place.</p>
+  </div>
+  <a class="button button--primary" href="{{ url_for('research.new') }}">New research</a>
+</section>
+
+<section class="stats" aria-label="Your workspace in numbers">
+  <div class="card stat"><p class="stat__value">{{ stats.projects }}</p><p class="stat__label">Projects</p></div>
+  <div class="card stat"><p class="stat__value">{{ stats.running }}</p><p class="stat__label">Running now</p></div>
+  <div class="card stat"><p class="stat__value">{{ stats.reports }}</p><p class="stat__label">Reports</p></div>
+</section>
+
+{% if recent %}
+<section aria-labelledby="recent-title">
+  <div class="section-head">
+    <h2 id="recent-title">Recent projects</h2>
+    <a href="{{ url_for('research.index') }}">View all</a>
+  </div>
+  <ul class="recent">
+    {% for p in recent %}
+    <li class="card recent__item">
+      <a href="{{ url_for('research.detail', public_id=p.public_id) }}"><strong>{{ p.title }}</strong></a>
+      <span class="recent__meta">{{ p.depth|capitalize }} · {{ p.created_at.strftime("%d %b %Y") }}</span>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% else %}
+<section class="empty-state" aria-labelledby="empty-title">
+  <svg class="empty-state__icon" viewBox="0 0 48 48" width="48" height="48" aria-hidden="true" focusable="false">
+    <circle cx="24" cy="24" r="19" fill="none" stroke="currentColor" stroke-width="2"/>
+    <path d="M24 9l6 15-6 15-6-15z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+  </svg>
+  <h2 id="empty-title">No research projects yet</h2>
+  <p>Create a project to set the question, depth, sources and output you want.</p>
+  <a class="button button--primary" href="{{ url_for('research.new') }}">Start your first research</a>
+</section>
+{% endif %}
+<p class="note">Running research (web search, the AI agents and report writing) is still being built. Projects you create
+  are saved, but no run can be started yet.</p>
+{% endblock %}

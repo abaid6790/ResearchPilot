@@ -1,0 +1,8 @@
+Hi {{ display_name }},
+
+Confirm your email address to finish setting up your {{ app_name }} account:
+
+{{ link }}
+
+This link works once and expires in {{ expires_hours }} hours.
+If you did not create an account, you can ignore this message.

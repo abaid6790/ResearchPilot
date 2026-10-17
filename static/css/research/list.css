@@ -1,0 +1,11 @@
+/* Research project list */
+.list-header { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: var(--space-4); margin-bottom: var(--space-4); }
+.list-filters { display: grid; grid-template-columns: 1fr auto auto; gap: var(--space-2); margin-bottom: var(--space-5); }
+@media (max-width: 520px) { .list-filters { grid-template-columns: 1fr; } }
+.project-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-3); }
+.project-card__title { font-size: var(--text-lg); margin: 0 0 var(--space-1); }
+.project-card__title a { color: var(--ink); text-decoration: none; }
+.project-card__title a:hover { text-decoration: underline; }
+.project-card__topic { color: var(--ink-soft); margin: 0 0 var(--space-2); overflow-wrap: anywhere; }
+.project-card__meta { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; margin: 0; font-size: var(--text-sm); color: var(--ink-faint); }
+.pager { display: flex; justify-content: center; align-items: center; gap: var(--space-4); margin-top: var(--space-5); }

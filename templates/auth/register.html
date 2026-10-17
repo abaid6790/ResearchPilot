@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% from "components/forms.html" import field, password_field %}
+{% block title %}Create account - ResearchPilot AI{% endblock %}
+{% block head_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/auth/auth.css') }}">{% endblock %}
+{% block main_class %}page page--auth{% endblock %}
+
+{% block content %}
+<section class="auth-card" aria-labelledby="auth-title">
+  <h1 id="auth-title" class="auth-card__title">Create your account</h1>
+  <p class="auth-card__lead">We will email you a link to confirm your address before you start.</p>
+
+  <form method="post" novalidate data-single-submit>
+    {{ form.hidden_tag() }}
+    {{ field(form.display_name, autocomplete="name", autofocus=True) }}
+    {{ field(form.email, autocomplete="email", type="email") }}
+    {{ password_field(form.password, autocomplete="new-password", meter=True,
+                      hint="At least 10 characters. A few random words make a strong passphrase.") }}
+    {{ password_field(form.confirm_password, autocomplete="new-password", confirm_for="#" ~ form.password.id) }}
+    {{ form.submit(class_="button button--primary button--block") }}
+  </form>
+
+  <p class="auth-card__footer">Already registered? <a href="{{ url_for('auth.login') }}">Sign in</a></p>
+</section>
+{% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', filename='js/auth/auth.js') }}" defer></script>{% endblock %}

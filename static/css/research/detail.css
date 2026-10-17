@@ -1,0 +1,12 @@
+/* Research project page */
+.project { display: grid; gap: var(--space-5); }
+.project__meta { color: var(--ink-faint); margin: 0; }
+.project__grid { display: grid; gap: var(--space-5); grid-template-columns: 1fr; align-items: start; }
+@media (min-width: 900px) { .project__grid { grid-template-columns: 1fr 1fr; } }
+.prewrap { white-space: pre-wrap; overflow-wrap: anywhere; }
+.notice { background: var(--info-soft); color: var(--info); border-radius: var(--radius-sm); padding: var(--space-3) var(--space-4); margin: var(--space-3) 0 0; }
+.plain-list { margin: 0; padding-left: 1.2rem; }
+.manage { display: flex; gap: var(--space-3); flex-wrap: wrap; }
+.dialog { border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); color: var(--ink); padding: var(--space-5); max-width: 32rem; width: calc(100% - 2rem); }
+.dialog::backdrop { background: rgba(10, 16, 24, 0.6); }
+.dialog__actions { display: flex; justify-content: flex-end; gap: var(--space-3); margin-top: var(--space-4); flex-wrap: wrap; }

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Confirm email - ResearchPilot AI{% endblock %}
+{% block head_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/auth/auth.css') }}">{% endblock %}
+{% block main_class %}page page--auth{% endblock %}
+
+{% block content %}
+<section class="auth-card" aria-labelledby="auth-title">
+  {% if status.value == 'valid' %}
+    <h1 id="auth-title" class="auth-card__title">Confirm your email address</h1>
+    <p class="auth-card__lead">One click to finish setting up your account.</p>
+    <form method="post" data-single-submit>
+      {{ form.hidden_tag() }}
+      <button type="submit" class="button button--primary button--block">Confirm email address</button>
+    </form>
+  {% elif status.value == 'expired' %}
+    <h1 id="auth-title" class="auth-card__title">This link has expired</h1>
+    <p class="auth-card__lead">Confirmation links only work for a limited time. Sign in and we can send you a new one.</p>
+    <a class="button button--primary button--block" href="{{ url_for('auth.login') }}">Go to sign in</a>
+  {% elif status.value == 'used' %}
+    <h1 id="auth-title" class="auth-card__title">This link was already used</h1>
+    <p class="auth-card__lead">It has either been used already or replaced by a newer link. If your email is confirmed you can simply sign in.</p>
+    <a class="button button--primary button--block" href="{{ url_for('auth.login') }}">Go to sign in</a>
+  {% else %}
+    <h1 id="auth-title" class="auth-card__title">This link is not valid</h1>
+    <p class="auth-card__lead">Check that you copied the whole link from the email. You can request a new one after signing in.</p>
+    <a class="button button--primary button--block" href="{{ url_for('auth.login') }}">Go to sign in</a>
+  {% endif %}
+</section>
+{% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', filename='js/auth/auth.js') }}" defer></script>{% endblock %}

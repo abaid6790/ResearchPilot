@@ -1,0 +1,12 @@
+line-length = 110
+target-version = "py311"
+extend-exclude = ["migrations", ".venv"]
+
+[lint]
+select = ["E", "F", "W", "I", "B", "UP", "S", "BLE"]
+ignore = ["S101", "B008"]
+
+[lint.per-file-ignores]
+"tests/*" = ["S105", "S106", "S311", "BLE001", "E501"]
+"scripts/*" = ["S101", "BLE001"]
+"*/models.py" = ["E501"]

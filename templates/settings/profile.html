@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% from "components/forms.html" import field, password_field %}
+{% block title %}Account settings - ResearchPilot AI{% endblock %}
+{% block head_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/settings/settings.css') }}">{% endblock %}
+
+{% block content %}
+<section class="settings">
+  <header class="settings__header">
+    <p class="eyebrow">Account</p>
+    <h1>Account settings</h1>
+  </header>
+
+  <div class="settings__grid">
+    <section class="card" aria-labelledby="profile-title">
+      <h2 id="profile-title" class="card__title">Profile</h2>
+      <dl class="meta">
+        <div><dt>Email</dt><dd>{{ current_user.email }}</dd></div>
+        <div><dt>Status</dt><dd><span class="badge badge--success">Email confirmed</span></dd></div>
+      </dl>
+      <form method="post" action="{{ url_for('settings.profile') }}" novalidate data-single-submit>
+        {{ profile_form.hidden_tag() }}
+        {{ field(profile_form.display_name, autocomplete="name") }}
+        {{ profile_form.submit(id="profile-submit", class_="button button--primary") }}
+      </form>
+    </section>
+
+    <section class="card" aria-labelledby="password-title">
+      <h2 id="password-title" class="card__title">Change password</h2>
+      <form method="post" action="{{ url_for('settings.change_password') }}" novalidate data-single-submit>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        {{ password_field(password_form.current_password, autocomplete="current-password") }}
+        {{ password_field(password_form.password, autocomplete="new-password", meter=True,
+                          hint="At least 10 characters. Changing it signs you out on other devices.") }}
+        {{ password_field(password_form.confirm_password, autocomplete="new-password",
+                          confirm_for="#" ~ password_form.password.id) }}
+        {{ password_form.submit(id="password-submit", class_="button button--primary") }}
+      </form>
+    </section>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', filename='js/auth/auth.js') }}" defer></script>{% endblock %}

@@ -1,0 +1,45 @@
+{# Reusable form macros. Usage: {% from "components/forms.html" import field, password_field %} #}
+
+{% macro errors(f) %}
+  {% if f.errors %}
+  <ul class="field__errors" id="{{ f.id }}-errors">
+    {% for e in f.errors %}<li>{{ e }}</li>{% endfor %}
+  </ul>
+  {% endif %}
+{% endmacro %}
+
+{% macro field(f, hint=None, autocomplete=None, type=None, autofocus=False) %}
+  {% set attrs = {'class_': 'field__input'} %}
+  {% if autocomplete %}{% set _ = attrs.update({'autocomplete': autocomplete}) %}{% endif %}
+  {% if type %}{% set _ = attrs.update({'type': type}) %}{% endif %}
+  {% if autofocus %}{% set _ = attrs.update({'autofocus': True}) %}{% endif %}
+  {% if f.errors %}{% set _ = attrs.update({'aria-describedby': f.id ~ '-errors', 'aria-invalid': 'true'}) %}{% endif %}
+  <div class="field{% if f.errors %} field--invalid{% endif %}">
+    {{ f.label(class_="field__label") }}
+    {{ f(**attrs) }}
+    {% if hint %}<p class="field__hint">{{ hint }}</p>{% endif %}
+    {{ errors(f) }}
+  </div>
+{% endmacro %}
+
+{% macro password_field(f, autocomplete="current-password", hint=None, meter=False, confirm_for=None) %}
+  {% set attrs = {'class_': 'field__input', 'autocomplete': autocomplete} %}
+  {% if meter %}{% set _ = attrs.update({'data-password-input': 'true'}) %}{% endif %}
+  {% if confirm_for %}{% set _ = attrs.update({'data-confirm-for': confirm_for}) %}{% endif %}
+  {% if f.errors %}{% set _ = attrs.update({'aria-describedby': f.id ~ '-errors', 'aria-invalid': 'true'}) %}{% endif %}
+  <div class="field{% if f.errors %} field--invalid{% endif %}">
+    {{ f.label(class_="field__label") }}
+    <div class="field__password">
+      {{ f(**attrs) }}
+      <button type="button" class="field__toggle" data-toggle-password="#{{ f.id }}" aria-label="Show password" aria-pressed="false">Show</button>
+    </div>
+    {% if meter %}
+    <div class="strength" data-strength-meter data-strength="0" aria-live="polite">
+      <div class="strength__bar"><span></span><span></span><span></span><span></span></div>
+      <p class="strength__label" data-strength-label></p>
+    </div>
+    {% endif %}
+    {% if hint %}<p class="field__hint">{{ hint }}</p>{% endif %}
+    {{ errors(f) }}
+  </div>
+{% endmacro %}

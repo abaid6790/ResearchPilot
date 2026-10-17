@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% from "components/forms.html" import field %}
+{% block title %}New research - ResearchPilot AI{% endblock %}
+{% block head_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/research/new.css') }}">{% endblock %}
+
+{% macro choice(f) %}
+  <div class="field{% if f.errors %} field--invalid{% endif %}">
+    {{ f.label(class_="field__label") }}
+    {{ f(class_="field__input") }}
+    {{ caller() if caller else "" }}
+    {% if f.errors %}<ul class="field__errors">{% for e in f.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+  </div>
+{% endmacro %}
+
+{% block content %}
+<section class="research-new" data-limits='{{ limits|tojson }}'>
+  <header class="research-new__header">
+    <p class="eyebrow">New research</p>
+    <h1>What do you want to research?</h1>
+    <p class="research-new__lead">Describe the question and how thorough it should be. Settings marked
+      <span class="cost-tag">uses more time and API quota</span> make a run slower and more expensive.</p>
+  </header>
+
+  {% if form.form_errors %}
+  <div class="alert alert--error" role="alert"><p class="alert__text">{{ form.form_errors|join(" ") }}</p></div>
+  {% endif %}
+
+  <form method="post" action="{{ url_for('research.new') }}" novalidate data-single-submit class="research-form">
+    {{ form.hidden_tag() }}
+
+    <section class="card form-section" aria-labelledby="sec-question">
+      <h2 class="card__title" id="sec-question">1. The question</h2>
+      {{ field(form.title, hint="A short name to find this project later.", autofocus=True) }}
+      {{ field(form.topic, hint="Be specific: what should the report answer?") }}
+      <p class="counter" data-counter-for="{{ form.topic.id }}" aria-live="polite"></p>
+      {{ field(form.objectives, hint="Goals, constraints, what to include or leave out.") }}
+    </section>
+
+    <section class="card form-section" aria-labelledby="sec-depth">
+      <h2 class="card__title" id="sec-depth">2. Depth and size <span class="cost-tag">uses more time and API quota</span></h2>
+      {% call choice(form.depth) %}<p class="field__hint" data-depth-summary></p>{% endcall %}
+      <div class="grid-3">
+        {{ field(form.max_sources, type="number", hint="Leave empty to use the depth default.") }}
+        {{ field(form.max_research_rounds, type="number", hint="Search-and-read passes.") }}
+        {{ field(form.max_revision_rounds, type="number", hint="Write-review-fix passes.") }}
+      </div>
+      <div class="grid-2">
+        {{ choice(form.output_length) }}
+        {{ choice(form.output_format) }}
+      </div>
+      <div class="checks">
+        <label class="check">{{ form.enable_critic() }} <span>{{ form.enable_critic.label.text }}
+          <small>Reviews the draft for gaps and unsupported claims. <span class="cost-tag">extra model calls</span></small></span></label>
+        <label class="check">{{ form.enable_additional_research() }} <span>{{ form.enable_additional_research.label.text }}
+          <small>Runs another search round if evidence is insufficient. <span class="cost-tag">extra searches</span></small></span></label>
+      </div>
+    </section>
+
+    <section class="card form-section" aria-labelledby="sec-audience">
+      <h2 class="card__title" id="sec-audience">3. Audience and style</h2>
+      <div class="grid-2">
+        {{ field(form.audience) }}
+        {{ field(form.writing_style, hint="For example neutral, academic, executive brief.") }}
+      </div>
+      <div class="grid-2">
+        {{ choice(form.language) }}
+        {{ choice(form.citation_style) }}
+      </div>
+    </section>
+
+    <section class="card form-section" aria-labelledby="sec-sources">
+      <h2 class="card__title" id="sec-sources">4. Sources</h2>
+      <fieldset class="field">
+        <legend class="field__label">{{ form.source_categories.label.text }}</legend>
+        <p class="field__hint">Leave all unticked to allow any category.</p>
+        {{ form.source_categories(class_="check-grid") }}
+        {% if form.source_categories.errors %}<ul class="field__errors">{% for e in form.source_categories.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </fieldset>
+      <div class="grid-2">
+        {{ field(form.prioritize_domains, hint="For example nature.com. Up to 25.") }}
+        {{ field(form.exclude_domains, hint="Sources from these domains are skipped. Up to 50.") }}
+      </div>
+      <div class="grid-2">
+        {{ field(form.date_from, type="date") }}
+        {{ field(form.date_to, type="date") }}
+      </div>
+      <p class="field__hint">Uploading your own PDF, DOCX or TXT documents as sources is not available yet.</p>
+    </section>
+
+    <div class="form-actions">
+      {{ form.submit(id="research-submit", class_="button button--primary") }}
+      <a class="button button--ghost" href="{{ url_for('research.index') }}">Cancel</a>
+    </div>
+    <p class="field__hint">Saving creates the project only. Nothing is sent to any AI provider until you start a run.</p>
+  </form>
+</section>
+{% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', filename='js/research/new.js') }}" defer></script>{% endblock %}

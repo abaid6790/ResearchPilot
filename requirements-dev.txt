@@ -1,0 +1,7 @@
+-r requirements.txt
+# Test and quality tooling. playwright is optional (browser smoke checks only).
+pytest==9.1.1
+pytest-cov==7.1.0
+ruff==0.17.0
+aiosmtpd==1.4.6
+playwright==1.63.0

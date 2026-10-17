@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>{% block title %}ResearchPilot AI{% endblock %}</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='images/favicon.svg') }}">
+  <script src="{{ url_for('static', filename='js/theme-init.js') }}"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+  {% block head_css %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+  <a class="skip-link" href="#main">Skip to content</a>
+  {% block navbar %}{% include "components/navbar.html" %}{% endblock %}
+  <main id="main" class="{% block main_class %}page{% endblock %}">
+    {% include "components/flash_messages.html" %}
+    {% block content %}{% endblock %}
+  </main>
+  {% block footer %}{% include "components/footer.html" %}{% endblock %}
+  <script src="{{ url_for('static', filename='js/base.js') }}" defer></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

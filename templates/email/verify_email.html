@@ -1,0 +1,9 @@
+{% extends "email/_layout.html" %}
+{% block body %}
+<p>Hi {{ display_name }},</p>
+<p>Confirm your email address to finish setting up your account.</p>
+<p style="margin:24px 0;"><a href="{{ link }}" style="background:#12324a;color:#ffffff;text-decoration:none;padding:12px 20px;border-radius:6px;display:inline-block;">Confirm email address</a></p>
+<p>This link works once and expires in {{ expires_hours }} hours. If the button does not work, paste this address into your browser:</p>
+<p style="word-break:break-all;color:#12324a;">{{ link }}</p>
+<p>If you did not create an account, you can ignore this message.</p>
+{% endblock %}

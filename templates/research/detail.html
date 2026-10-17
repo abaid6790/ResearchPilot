@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}{{ project.title }} - ResearchPilot AI{% endblock %}
+{% block head_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/research/detail.css') }}">{% endblock %}
+
+{% macro row(label, value, key=None) %}
+  <div><dt>{{ label }}{% if key in costly %} <span class="cost-tag">affects cost</span>{% endif %}</dt><dd>{{ value }}</dd></div>
+{% endmacro %}
+
+{% block content %}
+<article class="project">
+  <header class="project__header">
+    <div>
+      <p class="eyebrow"><a href="{{ url_for('research.index') }}">Research projects</a></p>
+      <h1>{{ project.title }}</h1>
+      <p class="project__meta">Created {{ project.created_at.strftime("%d %b %Y, %H:%M") }} UTC
+        {% if project.archived_at %}<span class="badge badge--warning">Archived</span>{% endif %}</p>
+    </div>
+  </header>
+
+  <section class="card" aria-labelledby="run-title">
+    <h2 class="card__title" id="run-title">Run</h2>
+    {% if active_job %}
+      <p>A run is in progress: <strong>{{ active_job.status|capitalize }}</strong>.</p>
+    {% elif jobs %}
+      <p>Last run: <strong>{{ jobs[0].status|replace('_', ' ')|capitalize }}</strong>.</p>
+    {% else %}
+      <p>No run has been started.</p>
+    {% endif %}
+    <p class="notice">Running research (searching the web, the agents and the report) is not available in this
+      build yet, so there is no button to start one. Your project and its settings are saved and will be
+      ready when it is.</p>
+  </section>
+
+  <div class="project__grid">
+    <section class="card" aria-labelledby="q-title">
+      <h2 class="card__title" id="q-title">Question</h2>
+      <p class="prewrap">{{ project.topic }}</p>
+      {% if project.objectives %}<h3>Objectives</h3><p class="prewrap">{{ project.objectives }}</p>{% endif %}
+    </section>
+
+    <section class="card" aria-labelledby="s-title">
+      <h2 class="card__title" id="s-title">Settings</h2>
+      <dl class="meta">
+        {{ row("Depth", depth_labels[project.depth].split(":")[0], "depth") }}
+        {{ row("Maximum sources", settings.max_sources, "max_sources") }}
+        {{ row("Research rounds", settings.max_research_rounds, "max_research_rounds") }}
+        {{ row("Revision rounds", settings.max_revision_rounds, "max_revision_rounds") }}
+        {{ row("Output length", settings.output_length|replace("_", " ")|capitalize, "output_length") }}
+        {{ row("Format", settings.output_format|upper) }}
+        {{ row("Citations", settings.citation_style|capitalize) }}
+        {{ row("Language", settings.language) }}
+        {{ row("Audience", settings.audience) }}
+        {{ row("Style", settings.writing_style) }}
+        {{ row("Critic review", "On" if settings.enable_critic else "Off", "enable_critic") }}
+        {{ row("Extra research when thin", "On" if settings.enable_additional_research else "Off", "enable_additional_research") }}
+        {{ row("Source categories", (settings.source_categories|join(", ")|replace("_", " ")) or "Any") }}
+        {{ row("Prioritised domains", settings.prioritize_domains|join(", ") or "None") }}
+        {{ row("Excluded domains", settings.exclude_domains|join(", ") or "None") }}
+        {{ row("Published from", settings.date_from or "Any") }}
+        {{ row("Published until", settings.date_to or "Any") }}
+      </dl>
+    </section>
+  </div>
+
+  <section class="card" aria-labelledby="h-title">
+    <h2 class="card__title" id="h-title">Runs and reports</h2>
+    {% if jobs %}
+    <ul class="plain-list">
+      {% for j in jobs %}<li>{{ j.created_at.strftime("%d %b %Y %H:%M") }} UTC: {{ j.status|replace("_", " ")|capitalize }}</li>{% endfor %}
+    </ul>
+    {% else %}
+    <p class="muted">No runs yet, so there are no sources or reports to show.</p>
+    {% endif %}
+  </section>
+
+  <section class="card card--danger" aria-labelledby="manage-title">
+    <h2 class="card__title" id="manage-title">Manage</h2>
+    <div class="manage">
+      <form method="post" action="{{ url_for('research.archive', public_id=project.public_id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="button button--ghost" type="submit">{{ "Restore project" if project.archived_at else "Archive project" }}</button>
+      </form>
+      <button class="button button--danger" type="button" data-open-dialog="delete-dialog">Delete project</button>
+    </div>
+  </section>
+
+  <dialog id="delete-dialog" class="dialog" aria-labelledby="delete-title">
+    <form method="post" action="{{ url_for('research.delete', public_id=project.public_id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <h2 id="delete-title">Delete this project?</h2>
+      <p>This permanently deletes the project and every run, source, claim and report saved under it. It cannot be undone.
+        Copies in backups are not deleted immediately.</p>
+      <label class="field__label" for="confirm_title">Type the project title to confirm</label>
+      <input class="field__input" id="confirm_title" name="confirm_title" autocomplete="off" required data-confirm-title="{{ project.title }}">
+      <div class="dialog__actions">
+        <button class="button button--ghost" type="button" data-close-dialog>Keep project</button>
+        <button class="button button--danger" type="submit" data-delete-submit disabled>Delete permanently</button>
+      </div>
+    </form>
+  </dialog>
+</article>
+{% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', filename='js/research/detail.js') }}" defer></script>{% endblock %}
