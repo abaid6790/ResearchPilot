@@ -113,3 +113,25 @@ def request_cancel(job: ResearchJob, actor_user_id: int) -> bool:
     record_event("job_cancelled", actor_user_id=actor_user_id, target_type="job", target_id=job.public_id)
     db.session.commit()
     return True
+
+
+def attach_documents(project, documents) -> int:
+    """Save extracted text of validated uploads on a project. Duplicates (same hash) are skipped."""
+    from research.models import ResearchUpload
+
+    existing = {u.sha256 for u in project.uploads}
+    added = 0
+    for doc in documents:
+        if doc.sha256 in existing:
+            continue
+        db.session.add(
+            ResearchUpload(
+                project_id=project.id, filename=doc.filename, kind=doc.kind, size_bytes=doc.size,
+                sha256=doc.sha256, page_count=doc.page_count, text=doc.text, warnings=doc.warnings or None,
+            )
+        )  # fmt: skip
+        existing.add(doc.sha256)
+        added += 1
+    if added:
+        db.session.commit()
+    return added

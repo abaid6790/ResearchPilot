@@ -59,6 +59,9 @@ class ResearchProject(TimestampMixin, db.Model):
     settings: Mapped[dict] = mapped_column(JSONType, default=dict, nullable=False)
     archived_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
+    uploads: Mapped[list[ResearchUpload]] = relationship(
+        cascade="all, delete-orphan", passive_deletes=True, order_by="ResearchUpload.id"
+    )
     jobs: Mapped[list[ResearchJob]] = relationship(
         back_populates="project",
         cascade="all, delete-orphan",
@@ -343,3 +346,27 @@ class ClaimSource(db.Model):
         foreign_keys=[source_id, job_id],
         viewonly=True,
     )
+
+
+class ResearchUpload(db.Model):
+    """A document the user attached to a project. Only the extracted text is kept: the original
+    file is never written to disk, so there is nothing to clean up or serve back."""
+
+    __tablename__ = "research_uploads"
+    __table_args__ = (
+        UniqueConstraint("project_id", "sha256", name="uq_research_uploads_project_sha"),
+        CheckConstraint("size_bytes >= 0", name="size_nonneg"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    project_id: Mapped[int] = mapped_column(
+        ForeignKey("research_projects.id", ondelete="CASCADE"), index=True, nullable=False
+    )
+    filename: Mapped[str] = mapped_column(String(255), nullable=False)  # display name only
+    kind: Mapped[str] = mapped_column(String(8), nullable=False)  # pdf, docx, txt
+    size_bytes: Mapped[int] = mapped_column(Integer, nullable=False)
+    sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    page_count: Mapped[int | None] = mapped_column(Integer)
+    text: Mapped[str] = mapped_column(Text, nullable=False)
+    warnings: Mapped[list | None] = mapped_column(JSONType)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)

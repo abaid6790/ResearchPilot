@@ -44,8 +44,10 @@ def create_app(config_name: str | None = None, overrides: dict | None = None) ->
     _init_extensions(app)
     _register_blueprints(app)
     from providers import init_app as init_llm
+    from research_tools import init_app as init_tools
 
     init_llm(app)
+    init_tools(app)
     register_error_handlers(app)
     register_security_headers(app)
     return app

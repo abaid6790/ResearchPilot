@@ -91,6 +91,9 @@ def new():
             current_user, title=form.title.data, topic=form.topic.data, objectives=form.objectives.data,
             settings=settings.model_dump(mode="json") if settings else {},
         )  # fmt: skip
+        from research.services import attach_documents
+
+        attach_documents(project, getattr(form, "parsed_documents", []))
         flash("Research project saved.", "success")
         return redirect(url_for("research.detail", public_id=project.public_id))
     return render_template(

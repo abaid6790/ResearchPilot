@@ -73,3 +73,16 @@ Several keys do not guarantee extra quota; see `docs/API_KEY_ROTATION.md`.
 Commands: `flask llm-status` (no network), `flask llm-ping` (one tiny real call per key; uses a
 little quota), `flask llm-reset` (forget cooldowns). `GET /health/providers` (signed-in users)
 shows the same status as JSON without calling any provider.
+
+## Web search and fetching (Phase 5)
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `TAVILY_API_KEY` | empty | Tavily search key (free at tavily.com). Verify with `flask search-ping` (uses about 1 credit) |
+| `TAVILY_BASE_URL` | `https://api.tavily.com` | Override for testing |
+| `TAVILY_TIMEOUT_S` | 30 | Per-request timeout |
+| `FETCH_MAX_BYTES` | 5242880 | Largest page body accepted after decompression (100 KB to 25 MB) |
+| `FETCH_TIMEOUT_S` | 30 | Total time per page (5 to 120) |
+| `FETCH_MAX_REDIRECTS` | 5 | Redirects followed, each re-checked (0 to 10) |
+
+Try a page with `flask fetch-check <url>`. SSRF protection has no off switch; see `docs/SECURITY.md`.

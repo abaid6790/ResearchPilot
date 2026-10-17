@@ -10,6 +10,7 @@ enforced by CHECK constraints, not only by application code.
 erDiagram
     users ||--o{ research_projects : owns
     research_projects ||--o{ research_jobs : "runs"
+    research_projects ||--o{ research_uploads : "attaches"
     research_projects ||--o{ report_documents : has
     research_jobs ||--o{ research_job_events : logs
     research_jobs ||--o{ research_tasks : plans
@@ -40,6 +41,7 @@ second user, by public and by internal ID.
 |---|---|---|
 | `users`, `auth_tokens` | Accounts, one-time email tokens | see DATABASE_SETUP.md |
 | `research_projects` | The request: title, topic, objectives, `depth`, validated `settings` (JSON) | `depth` vocabulary; non-blank title; index `(user_id, created_at)` |
+| `research_uploads` | Text extracted from a user's PDF/DOCX/TXT (original file is never stored): filename (display only), kind, size, sha256, page count, text, warnings | unique `(project_id, sha256)`; cascades with the project |
 | `research_jobs` | One workflow run: status, stage, agent, rounds, `config_snapshot`, `checkpoint`, cancel flag, `awaiting_decision` + `unresolved_issues`, error info, `event_seq` | status vocabulary (queued ... cancelled); **partial unique index: one active job per project**; rounds >= 0 |
 | `research_job_events` | Append-only progress log for live progress and reconnect (`seq` per job) | unique `(job_id, seq)`; level vocabulary |
 | `research_tasks` | Questions, subtopics, searches, specialist tasks; parallel group, queries used, status | kind/status/agent vocabularies |

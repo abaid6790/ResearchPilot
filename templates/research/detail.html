@@ -62,6 +62,17 @@
     </section>
   </div>
 
+  <section class="card" aria-labelledby="docs-title">
+    <h2 class="card__title" id="docs-title">Your documents</h2>
+    {% if project.uploads %}
+    <ul class="plain-list">
+      {% for u in project.uploads %}<li>{{ u.filename }} <span class="muted">({{ u.kind|upper }}{% if u.page_count %}, {{ u.page_count }} pages{% endif %}, {{ (u.text|length) }} characters read)</span></li>{% endfor %}
+    </ul>
+    {% else %}
+    <p class="muted">No documents attached.</p>
+    {% endif %}
+  </section>
+
   <section class="card" aria-labelledby="h-title">
     <h2 class="card__title" id="h-title">Runs and reports</h2>
     {% if jobs %}

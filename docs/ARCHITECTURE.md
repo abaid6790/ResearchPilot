@@ -8,6 +8,7 @@ config.py         environment-driven config classes + validate_config()
 extensions.py     db, migrate, login_manager, csrf, limiter (naming convention for Alembic)
 core/             logging redaction, security headers, error handlers, SMTP mailer, health, URL helper
 auth/             models, forms, services (business logic), tokens, routes, decorators
+research_tools/    Tavily search, safe fetching (SSRF guard), HTML/PDF/DOCX/TXT extraction, untrusted-content helpers, scoring
 providers/        LLM layer: adapters (gemini, groq, openrouter), router, key_manager, models, structured
 research/         projects, jobs, tasks, sources, claims: models, settings schema, services, ownership loaders
 reports/          report documents, sections, revisions, quality evaluations

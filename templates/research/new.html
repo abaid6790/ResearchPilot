@@ -25,7 +25,7 @@
   <div class="alert alert--error" role="alert"><p class="alert__text">{{ form.form_errors|join(" ") }}</p></div>
   {% endif %}
 
-  <form method="post" action="{{ url_for('research.new') }}" novalidate data-single-submit class="research-form">
+  <form method="post" action="{{ url_for('research.new') }}" enctype="multipart/form-data" novalidate data-single-submit class="research-form">
     {{ form.hidden_tag() }}
 
     <section class="card form-section" aria-labelledby="sec-question">
@@ -84,7 +84,7 @@
         {{ field(form.date_from, type="date") }}
         {{ field(form.date_to, type="date") }}
       </div>
-      <p class="field__hint">Uploading your own PDF, DOCX or TXT documents as sources is not available yet.</p>
+      {{ field(form.documents, hint="PDF, DOCX, TXT or MD. Up to 5 files, 10 MB each. Text is extracted and kept with the project; the original file is not stored. Scanned PDFs are not read (no OCR).", type="file") }}
     </section>
 
     <div class="form-actions">

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 from flask_wtf import FlaskForm
+from flask_wtf.file import MultipleFileField
 from pydantic import ValidationError as PydanticValidationError
 from wtforms import (
     BooleanField,
@@ -15,11 +16,14 @@ from wtforms import (
     TextAreaField,
     widgets,
 )
-from wtforms.validators import DataRequired, Length, Optional
+from wtforms.validators import DataRequired, Length, Optional, ValidationError
 
 from research.constants import DEPTHS, SOURCE_CATEGORIES
 from research.schemas import DEPTH_PRESETS, HARD_LIMITS, ResearchSettings
+from research_tools.documents import DocumentError, ParsedDocument, parse_document
 
+MAX_UPLOADS = 5
+MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 TOPIC_MAX = 4000
 OBJECTIVES_MAX = 4000
 
@@ -79,7 +83,28 @@ class NewResearchForm(FlaskForm):
     citation_style = SelectField("Citation style", choices=CITATION_CHOICES, default="numeric")
     enable_critic = BooleanField("Independent critic review", default=True)
     enable_additional_research = BooleanField("Search again when evidence is thin", default=True)
+    documents = MultipleFileField("Your own documents (optional)")
     submit = SubmitField("Save research project")
+
+    parsed_documents: list[ParsedDocument]
+
+    def validate_documents(self, field) -> None:
+        """Read every attached file now (in memory); nothing is stored on disk."""
+        self.parsed_documents = []
+        files = [f for f in (field.data or []) if getattr(f, "filename", "")]
+        if len(files) > MAX_UPLOADS:
+            raise ValidationError(f"Attach at most {MAX_UPLOADS} documents.")
+        seen: set[str] = set()
+        for storage in files:
+            data = storage.stream.read(MAX_UPLOAD_BYTES + 1)
+            try:
+                parsed = parse_document(storage.filename, data, max_bytes=MAX_UPLOAD_BYTES)
+            except DocumentError as exc:
+                raise ValidationError(f"{storage.filename[:80]}: {exc}") from exc
+            if parsed.sha256 in seen:
+                continue
+            seen.add(parsed.sha256)
+            self.parsed_documents.append(parsed)
 
     def build_settings(self) -> ResearchSettings | None:
         """Validate the settings fields through ``ResearchSettings``; attach errors to the fields."""
