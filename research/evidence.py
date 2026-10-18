@@ -32,8 +32,14 @@ def save_candidates(
 ) -> list[ResearchSource]:
     """Insert new candidates (de-duplicated by normalised URL) up to ``max_sources`` for the job.
     Returns only the rows created now."""
-    existing = set(db.session.scalars(select(ResearchSource.url_hash).where(ResearchSource.job_id == job.id)))
-    room = max_sources - len(existing)
+    existing = set(
+        db.session.scalars(
+            select(ResearchSource.url_hash).where(
+                ResearchSource.job_id == job.id, ResearchSource.url_hash.is_not(None)
+            )
+        )
+    )
+    room = max_sources - source_count(job)
     created: list[ResearchSource] = []
     for cand in candidates:
         if room <= 0:

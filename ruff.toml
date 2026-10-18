@@ -12,3 +12,4 @@ ignore = ["S101", "B008"]
 "*/models.py" = ["E501"]
 "research_tools/*" = ["E501"]  # long regex / domain tables
 "research/evidence.py" = ["E501"]
+"agents/*" = ["E501"]  # prompts and long message strings

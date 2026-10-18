@@ -37,3 +37,6 @@ def init_app(app) -> None:
     from research_tools.cli import register_cli
 
     register_cli(app)
+    from agents.cli import register_cli as register_agent_cli
+
+    register_agent_cli(app)

@@ -86,3 +86,9 @@ shows the same status as JSON without calling any provider.
 | `FETCH_MAX_REDIRECTS` | 5 | Redirects followed, each re-checked (0 to 10) |
 
 Try a page with `flask fetch-check <url>`. SSRF protection has no off switch; see `docs/SECURITY.md`.
+
+## Agents (Phase 6)
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `AGENT_MAX_LLM_CALLS` | 120 | Most model calls one research job may make before it stops |

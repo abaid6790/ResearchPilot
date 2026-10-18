@@ -9,7 +9,7 @@
 | 4 | Remaining database models | Done |
 | 4b | Research workspace UI: new-research form, project list, project page, archive, delete, real dashboard counts | Done |
 | 5 | Research tools (Tavily, safe page fetching, extraction, PDF/DOCX/TXT reader, uploads) | Done (not run against live Tavily or real websites) |
-| 6 | Agents and LangGraph workflow | Planned |
+| 6 | Agents and LangGraph workflow | Done (tested with scripted models, not real ones) |
 | 7 | Background jobs (Celery/Redis) and live progress | Planned |
 | 8 | Core research UI | Planned |
 | 9 | Source explorer and report editor | Planned |
@@ -42,3 +42,5 @@
 - Phase 5 adds the tools but nothing calls them yet: the agents (Phase 6) and background jobs (Phase 7) do. Uploaded documents are read and stored with the project; they become sources when a run starts.
 - Phase 5 was tested against local fake servers (Tavily and websites), not the live services. Run `flask search-ping` with your key and `flask fetch-check <url>` on a few real pages first.
 - Page fetching does not check robots.txt, does not run JavaScript, and cannot read scanned PDFs (no OCR).
+- Phase 6 can be run only from the command line (`flask run-research`); the web button, background worker and live progress are Phase 7.
+- Phase 6 agents were tested with scripted models and fake web/search servers; real model quality and prompt tuning are unverified. See `docs/AGENTS.md`.

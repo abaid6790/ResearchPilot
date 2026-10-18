@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import logging
 import random
+import re
 import time
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
@@ -129,6 +130,8 @@ class TavilyClient:
         include_domains: list[str] | None = None,
         exclude_domains: list[str] | None = None,
         time_range: str | None = None,
+        start_date: str | None = None,
+        end_date: str | None = None,
         user_id: int | None = None,
         job_id: int | None = None,
     ) -> SearchResponse:
@@ -152,6 +155,9 @@ class TavilyClient:
             payload["exclude_domains"] = exclude_domains[:150]
         if time_range in ("day", "week", "month", "year"):
             payload["time_range"] = time_range
+        for name, value in (("start_date", start_date), ("end_date", end_date)):
+            if value and re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
+                payload[name] = value
         headers = {"Authorization": f"Bearer {self._key}"}
         url = f"{self.base_url}/search"
 

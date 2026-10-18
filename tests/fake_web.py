@@ -41,6 +41,12 @@ class Handler(BaseHTTPRequestHandler):
         path = self.path
         if path == "/article":
             return self._send(body=ARTICLE.encode())
+        if path.startswith("/page/"):
+            n = path.rsplit("/", 1)[1]
+            body = ARTICLE.replace("Solar panel efficiency", f"Solar panel efficiency study {n}").replace(
+                "Efficiency depends", f"Study {n} found that efficiency depends"
+            )
+            return self._send(body=body.encode())
         if path == "/text":
             return self._send(body=b"plain text body", ctype="text/plain; charset=utf-8")
         if path == "/redirect":
