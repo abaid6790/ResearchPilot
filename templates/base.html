@@ -9,16 +9,23 @@
   <script src="{{ url_for('static', filename='js/theme-init.js') }}"></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/shell.css') }}">
   {% block head_css %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
   <a class="skip-link" href="#main">Skip to content</a>
   {% block navbar %}{% include "components/navbar.html" %}{% endblock %}
-  <main id="main" class="{% block main_class %}page{% endblock %}">
-    {% include "components/flash_messages.html" %}
-    {% block content %}{% endblock %}
-  </main>
-  {% block footer %}{% include "components/footer.html" %}{% endblock %}
+  {% set show_sidebar = current_user.is_authenticated and current_user.is_verified %}
+  <div class="{{ 'shell' if show_sidebar else 'shell shell--bare' }}">
+    {% if show_sidebar %}{% include "components/sidebar.html" %}{% endif %}
+    <div class="shell__main">
+      <main id="main" class="{% block main_class %}page{% endblock %}">
+        {% include "components/flash_messages.html" %}
+        {% block content %}{% endblock %}
+      </main>
+      {% block footer %}{% include "components/footer.html" %}{% endblock %}
+    </div>
+  </div>
   <script src="{{ url_for('static', filename='js/base.js') }}" defer></script>
   {% block scripts %}{% endblock %}
 </body>

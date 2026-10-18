@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Research history - ResearchPilot AI{% endblock %}
+{% block head_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/research/list.css') }}">{% endblock %}
+{% block content %}
+<section>
+  <header class="list-header">
+    <div><p class="eyebrow">Research</p><h1>History</h1></div>
+  </header>
+  <form class="list-filters list-filters--two" method="get" action="{{ url_for('research.history') }}">
+    <label class="visually-hidden" for="status">Filter by status</label>
+    <select class="field__input" id="status" name="status">
+      <option value="">All runs</option>
+      {% for s in statuses %}<option value="{{ s }}" {{ "selected" if s == status }}>{{ s|replace("_", " ")|capitalize }}</option>{% endfor %}
+    </select>
+    <button class="button button--ghost" type="submit">Filter</button>
+  </form>
+  {% if rows %}
+  <ul class="project-list">
+    {% for job, project in rows %}
+    <li class="project-card card">
+      <div class="project-card__main">
+        <h2 class="project-card__title"><a href="{{ url_for('research.detail', public_id=project.public_id) }}">{{ project.title }}</a></h2>
+        <p class="project-card__meta">
+          <span class="badge {{ 'badge--success' if job.status == 'completed' else 'badge--warning' if job.status in ('completed_with_warnings', 'failed', 'cancelled') else '' }}">{{ job.status|replace("_", " ")|capitalize }}</span>
+          <span>{{ job.created_at.strftime("%d %b %Y, %H:%M") }} UTC</span>
+          {% if job.started_at and job.finished_at %}<span>{{ ((job.finished_at - job.started_at).total_seconds() // 60)|int }} min {{ ((job.finished_at - job.started_at).total_seconds() % 60)|int }} s</span>{% endif %}
+          <span>{{ source_counts.get(job.id, 0) }} source(s)</span>
+          {% if job.unresolved_issues %}<span>{{ job.unresolved_issues|length }} note(s)</span>{% endif %}
+          {% if job.error_message %}<span>{{ job.error_message|truncate(80) }}</span>{% endif %}
+        </p>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% if pages > 1 %}
+  <nav class="pager" aria-label="Pages">
+    {% if page > 1 %}<a class="button button--ghost button--small" href="{{ url_for('research.history', status=status, page=page-1) }}">Previous</a>{% endif %}
+    <span>Page {{ page }} of {{ pages }}</span>
+    {% if page < pages %}<a class="button button--ghost button--small" href="{{ url_for('research.history', status=status, page=page+1) }}">Next</a>{% endif %}
+  </nav>
+  {% endif %}
+  {% else %}
+  <section class="empty-state"><h2>No runs yet</h2><p>Runs you start appear here with their outcome.</p>
+    <a class="button button--primary" href="{{ url_for('research.index') }}">Go to projects</a></section>
+  {% endif %}
+</section>
+{% endblock %}

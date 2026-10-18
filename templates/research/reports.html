@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Saved reports - ResearchPilot AI{% endblock %}
+{% block head_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/research/list.css') }}">{% endblock %}
+{% block content %}
+<section>
+  <header class="list-header">
+    <div><p class="eyebrow">Research</p><h1>Saved reports</h1></div>
+    <a class="button button--primary" href="{{ url_for('research.new') }}">New research</a>
+  </header>
+  <form class="list-filters list-filters--two" method="get" action="{{ url_for('research.reports') }}" role="search">
+    <label class="visually-hidden" for="q">Search reports</label>
+    <input class="field__input" id="q" name="q" type="search" value="{{ query }}" placeholder="Search report or project title" maxlength="100">
+    <button class="button button--ghost" type="submit">Search</button>
+  </form>
+  {% if rows %}
+  <ul class="project-list">
+    {% for report, project in rows %}
+    <li class="project-card card">
+      <div class="project-card__main">
+        <h2 class="project-card__title"><a href="{{ url_for('research.report', public_id=project.public_id) }}">{{ report.title }}</a></h2>
+        <p class="project-card__meta">
+          {% if report.export_ready %}<span class="badge badge--success">Checks passed</span>{% else %}<span class="badge badge--warning">Not fully verified</span>{% endif %}
+          <span class="badge">{{ report.status|capitalize }}</span>
+          <span>{{ report.created_at.strftime("%d %b %Y, %H:%M") }} UTC</span>
+          <a href="{{ url_for('research.detail', public_id=project.public_id) }}">Project</a>
+        </p>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% if pages > 1 %}
+  <nav class="pager" aria-label="Pages">
+    {% if page > 1 %}<a class="button button--ghost button--small" href="{{ url_for('research.reports', q=query, page=page-1) }}">Previous</a>{% endif %}
+    <span>Page {{ page }} of {{ pages }}</span>
+    {% if page < pages %}<a class="button button--ghost button--small" href="{{ url_for('research.reports', q=query, page=page+1) }}">Next</a>{% endif %}
+  </nav>
+  {% endif %}
+  {% else %}
+  <section class="empty-state">
+    <h2>{{ "No reports match" if query else "No reports yet" }}</h2>
+    <p>{{ "Try a different search." if query else "A report appears here when a research run finishes." }}</p>
+    {% if not query %}<a class="button button--primary" href="{{ url_for('research.index') }}">Go to projects</a>{% endif %}
+  </section>
+  {% endif %}
+</section>
+{% endblock %}

@@ -44,6 +44,29 @@
   <a class="button button--primary" href="{{ url_for('research.new') }}">Start your first research</a>
 </section>
 {% endif %}
-<p class="note">Running research (web search, the AI agents and report writing) is still being built. Projects you create
-  are saved, but no run can be started yet.</p>
+
+<div class="dash-grid">
+  <section aria-labelledby="activity-title">
+    <div class="section-head"><h2 id="activity-title">Recent activity</h2><a href="{{ url_for('research.history') }}">History</a></div>
+    {% if activity %}
+    <ul class="activity card">
+      {% for event, project in activity %}
+      <li class="activity__item activity__item--{{ event.level }}">
+        <a href="{{ url_for('research.detail', public_id=project.public_id) }}">{{ project.title }}</a>
+        <span>{{ event.message }}</span>
+        <time class="activity__time" datetime="{{ event.created_at.isoformat() }}">{{ event.created_at.strftime("%d %b %H:%M") }}</time>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}<p class="muted card dash-empty">Nothing has run yet. Start a research project to see activity here.</p>{% endif %}
+  </section>
+  <section aria-labelledby="usage-title">
+    <div class="section-head"><h2 id="usage-title">Usage this month</h2></div>
+    {% if usage %}
+    <div class="card"><table class="usage"><thead><tr><th scope="col">Service</th><th scope="col">Calls</th><th scope="col">Failed</th><th scope="col">Tokens</th></tr></thead>
+      <tbody>{% for u in usage %}<tr><th scope="row">{{ u.provider|capitalize }}</th><td>{{ u.calls }}</td><td>{{ u.failed }}</td><td>{{ u.tokens if u.tokens else "n/a" }}</td></tr>{% endfor %}</tbody></table>
+      <p class="note">Counted from calls this app made for your runs (UTC month). Tokens are shown only where the provider reported them; search calls use credits, not tokens.</p></div>
+    {% else %}<p class="muted card dash-empty">No provider calls recorded this month.</p>{% endif %}
+  </section>
+</div>
 {% endblock %}

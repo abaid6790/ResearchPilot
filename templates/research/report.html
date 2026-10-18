@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}{{ report.title }} - report - ResearchPilot AI{% endblock %}
+{% block head_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/research/detail.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/research/report.css') }}">{% endblock %}
+{% block content %}
+<article class="report">
+  <header>
+    <p class="eyebrow"><a href="{{ url_for('research.detail', public_id=project.public_id) }}">&larr; {{ project.title }}</a></p>
+    <h1>{{ report.title }}</h1>
+    <p class="project__meta">Generated {{ report.created_at.strftime("%d %b %Y, %H:%M") }} UTC</p>
+    <p class="report__tools">
+      <a class="button button--primary button--small" href="{{ url_for('editor.edit', public_id=project.public_id) }}">Edit report</a>
+      <a class="button button--ghost button--small" href="{{ url_for('editor.sources', public_id=project.public_id) }}">Source explorer</a>
+    </p>
+  </header>
+
+  {% if report.export_ready %}
+    <p class="report__banner report__banner--ok">No major problems were found by the automatic checks. This does not prove every statement is correct: check important ones against the sources.</p>
+  {% else %}
+    <p class="report__banner report__banner--warn"><strong>Not fully verified.</strong> The automatic checks found problems. Read the Limitations section before relying on this report.</p>
+  {% endif %}
+  {% if job and job.unresolved_issues %}
+    <details class="issues"><summary>{{ job.unresolved_issues|length }} note(s) from the checks</summary>
+      <ul>{% for i in job.unresolved_issues %}<li><span class="badge badge--{{ 'warning' if i.severity == 'major' else 'neutral' }}">{{ i.severity }}</span> {{ i.detail }}</li>{% endfor %}</ul>
+    </details>
+  {% endif %}
+
+  {% for s in sections %}
+  <section class="report__section" id="sec-{{ s.key }}">
+    <h2>{{ s.heading }}</h2>
+    {{ s.html|safe }}
+  </section>
+  {% endfor %}
+
+  <section class="report__section" id="sec-references">
+    <h2>References</h2>
+    {% if references %}
+    <ol class="refs">
+      {% for n, src in references %}
+      <li id="ref-{{ n }}">
+        <span><strong>[{{ n }}]</strong> {{ src.title or src.domain or src.upload_name }}</span>
+        <span class="refs__meta"><a href="{{ url_for('editor.source_detail', public_id=project.public_id, source_id=src.id) }}">Inspect source</a> &middot;
+          {% if src.url %}<a href="{{ src.url }}" rel="noopener noreferrer nofollow" target="_blank">{{ src.url }}</a>{% else %}Uploaded document: {{ src.upload_name }}{% endif %}
+          {% if src.published_at %} &middot; published {{ src.published_at.strftime("%Y-%m-%d") }}{% endif %}
+          {% if src.retrieved_at %} &middot; retrieved {{ src.retrieved_at.strftime("%Y-%m-%d") }}{% endif %}
+          &middot; {{ "read in full" if src.fetch_status == "retrieved" else "search snippet only" if src.fetch_status == "snippet_only" else src.fetch_status }}
+        </span>
+        {% for w in src.warnings or [] %}{% if "injection" in w or "same content" in w %}<span class="refs__warn">{{ w }}</span>{% endif %}{% endfor %}
+      </li>
+      {% endfor %}
+    </ol>
+    {% else %}<p>No sources were cited.</p>{% endif %}
+  </section>
+</article>
+{% endblock %}

@@ -93,7 +93,7 @@ def test_valid_submission_saves_project_with_validated_settings(alice_client, al
     assert project.settings["source_categories"] == ["academic"]
     assert project.settings["enable_critic"] is True
     page = alice_client.get(response.headers["Location"]).get_data(as_text=True)
-    assert "Heat pumps" in page and "not available in this build" in flat(page)
+    assert "Heat pumps" in page and "Start research" in page
 
 
 def test_unchecked_boxes_are_saved_as_off(alice_client):
@@ -239,8 +239,8 @@ def test_detail_page_shows_runs_and_is_honest_about_run_support(alice_client, al
     project = create_project(alice, title="With job", topic="a topic long enough")
     create_job(project)
     html = alice_client.get(f"/research/{project.public_id}").get_data(as_text=True)
-    assert "A run is in progress" in html and "not available in this build" in flat(html)
-    assert "Start research" not in html  # no fake button
+    assert "data-job-panel" in html and "Stop this run" in html
+    assert "Start research" not in html  # cannot start a second run while one is active
 
 
 def test_security_headers_and_no_inline_scripts_on_new_pages(alice_client, alice):

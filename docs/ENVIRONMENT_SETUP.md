@@ -92,3 +92,14 @@ Try a page with `flask fetch-check <url>`. SSRF protection has no off switch; se
 | Variable | Default | Meaning |
 |---|---|---|
 | `AGENT_MAX_LLM_CALLS` | 120 | Most model calls one research job may make before it stops |
+
+## Background jobs (Phase 7)
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `JOB_RUNNER` | `thread` | `thread`, `celery` or `manual` (see `docs/BACKGROUND_JOBS.md`) |
+| `JOB_WORKERS` | 2 | Threads for the `thread` runner |
+| `JOB_STALE_AFTER_S` | 300 | Seconds without a heartbeat before a running job counts as abandoned |
+| `CELERY_BROKER_URL` | `REDIS_URL` | Celery broker |
+| `MAX_ACTIVE_JOBS_PER_USER` | 2 | Simultaneous runs per user |
+| `JOB_SSE_MAX_SECONDS` | 60 | Longest a progress stream stays open before the browser reconnects |

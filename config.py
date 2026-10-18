@@ -98,6 +98,16 @@ class BaseConfig:
 
     REDIS_URL = _env("REDIS_URL")
 
+    # Background research jobs. JOB_RUNNER: "thread" (in this process; fine for one user or development,
+    # jobs stop if the process restarts), "celery" (separate worker; needs Redis) or "manual" (nothing
+    # runs by itself: used by tests and `flask run-research`).
+    JOB_RUNNER = _env("JOB_RUNNER", "thread").lower()
+    JOB_WORKERS = _env_int("JOB_WORKERS", 2)
+    JOB_STALE_AFTER_S = _env_int("JOB_STALE_AFTER_S", 300)
+    CELERY_BROKER_URL = _env("CELERY_BROKER_URL") or _env("REDIS_URL")
+    MAX_ACTIVE_JOBS_PER_USER = _env_int("MAX_ACTIVE_JOBS_PER_USER", 2)
+    JOB_SSE_MAX_SECONDS = _env_int("JOB_SSE_MAX_SECONDS", 60)
+
 
 class DevelopmentConfig(BaseConfig):
     ENV_NAME = "development"
@@ -116,6 +126,8 @@ class TestingConfig(BaseConfig):
     MAIL_SERVER = "localhost"
     MAIL_DEFAULT_SENDER = "ResearchPilot <no-reply@example.test>"
     APP_BASE_URL = "http://localhost"
+    JOB_RUNNER = "manual"
+    JOB_SSE_MAX_SECONDS = 3
 
 
 class ProductionConfig(BaseConfig):

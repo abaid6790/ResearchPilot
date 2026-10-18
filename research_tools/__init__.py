@@ -40,3 +40,6 @@ def init_app(app) -> None:
     from agents.cli import register_cli as register_agent_cli
 
     register_agent_cli(app)
+    from jobs import init_app as init_jobs
+
+    init_jobs(app)

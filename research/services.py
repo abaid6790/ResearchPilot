@@ -135,3 +135,101 @@ def attach_documents(project, documents) -> int:
     if added:
         db.session.commit()
     return added
+
+
+RESUMABLE_ERRORS = frozenset(
+    {"llm_unavailable", "llm_not_configured", "search_unavailable", "search_not_configured", "budget_exceeded",
+     "internal_error", "llm_bad_output", "llm_rejected"}
+)  # fmt: skip
+
+
+def can_resume(job: ResearchJob) -> bool:
+    return job.status == c.JOB_FAILED and (job.error_code in RESUMABLE_ERRORS)
+
+
+def resume_job(job: ResearchJob, actor_user_id: int) -> bool:
+    """Put a failed job back in the queue; the workflow continues from what is already saved.
+    Raises :class:`ActiveJobExistsError` if the project has another active job."""
+    if not can_resume(job):
+        return False
+    job.status = c.JOB_QUEUED
+    job.finished_at = None
+    job.error_code = job.error_message = None
+    job.heartbeat_at = None
+    try:
+        db.session.flush()
+    except IntegrityError as exc:
+        db.session.rollback()
+        raise ActiveJobExistsError from exc
+    append_event(job, "job_resumed", "Run resumed from saved progress.", stage="queued", agent="system")
+    record_event("job_started", actor_user_id=actor_user_id, target_type="job", target_id=job.public_id)
+    db.session.commit()
+    return True
+
+
+def cancel_if_unstarted(job: ResearchJob) -> bool:
+    """A queued job that no worker has touched is cancelled immediately (nobody is there to notice the request)."""
+    result = db.session.execute(
+        update(ResearchJob)
+        .where(ResearchJob.id == job.id, ResearchJob.status == c.JOB_QUEUED, ResearchJob.heartbeat_at.is_(None))
+        .values(status=c.JOB_CANCELLED, current_stage=c.JOB_CANCELLED, finished_at=utcnow(), error_code="cancelled",
+                error_message="Cancelled before it started.")
+    )  # fmt: skip
+    if result.rowcount:
+        db.session.refresh(job)
+        append_event(
+            job,
+            "job_cancelled",
+            "Cancelled before it started.",
+            level="warning",
+            stage="cancelled",
+            agent="system",
+        )
+    db.session.commit()
+    return bool(result.rowcount)
+
+
+def job_summary(job: ResearchJob) -> dict:
+    """What the progress panel shows besides the log: counted from the database, nothing estimated."""
+    from sqlalchemy import func
+
+    from research.models import ResearchClaim, ResearchJobEvent, ResearchSource, ResearchTask
+
+    tasks = [
+        {"title": t.title, "status": t.status, "round": t.round}
+        for t in db.session.scalars(
+            select(ResearchTask).where(ResearchTask.job_id == job.id).order_by(ResearchTask.position)
+        )
+    ]
+    by_status = dict(
+        db.session.execute(
+            select(ResearchSource.fetch_status, func.count())
+            .where(ResearchSource.job_id == job.id)
+            .group_by(ResearchSource.fetch_status)
+        ).all()
+    )
+    events = dict(
+        db.session.execute(
+            select(ResearchJobEvent.event_type, func.count())
+            .where(ResearchJobEvent.job_id == job.id, ResearchJobEvent.event_type.in_(["query_run"]))
+            .group_by(ResearchJobEvent.event_type)
+        ).all()
+    )
+    problems = db.session.scalar(
+        select(func.count())
+        .select_from(ResearchJobEvent)
+        .where(ResearchJobEvent.job_id == job.id, ResearchJobEvent.level.in_(["warning", "error"]))
+    )
+    return {
+        "tasks": tasks,
+        "tasks_done": sum(1 for t in tasks if t["status"] == "done"),
+        "sources": sum(by_status.values()),
+        "sources_read": by_status.get("retrieved", 0),
+        "claims": db.session.scalar(
+            select(func.count()).select_from(ResearchClaim).where(ResearchClaim.job_id == job.id)
+        ),
+        "queries": events.get("query_run", 0),
+        "research_round": job.research_round,
+        "revision_round": job.revision_round,
+        "problems": problems,
+    }

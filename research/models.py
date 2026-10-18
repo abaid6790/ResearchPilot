@@ -106,6 +106,8 @@ class ResearchJob(TimestampMixin, db.Model):
     # Workflow checkpoint (typed state) so an interrupted job can resume. Never contains secrets.
     checkpoint: Mapped[dict | None] = mapped_column(JSONType)
     celery_task_id: Mapped[str | None] = mapped_column(String(64))
+    # Refreshed while a worker runs the job; a stale value means the worker died (see jobs/dispatch.py).
+    heartbeat_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     cancel_requested_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     # Set when quality gates were not met and the user must decide whether to continue.
     awaiting_decision: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)

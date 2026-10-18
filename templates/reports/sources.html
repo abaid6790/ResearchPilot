@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Sources - {{ project.title }} - ResearchPilot AI{% endblock %}
+{% block head_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/research/list.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/reports/sources.css') }}">{% endblock %}
+{% block content %}
+<section>
+  <header class="list-header">
+    <div>
+      <p class="eyebrow"><a href="{{ url_for('research.detail', public_id=project.public_id) }}">&larr; {{ project.title }}</a></p>
+      <h1>Sources</h1>
+    </div>
+    {% if report %}<a class="button button--ghost" href="{{ url_for('research.report', public_id=project.public_id) }}">View report</a>{% endif %}
+  </header>
+  <p class="muted">A working link does not prove a source supports a claim. "Support" below comes from the checks on each claim's excerpt, and many sources have not been reviewed.</p>
+
+  <form class="source-filters" method="get" action="{{ url_for('editor.sources', public_id=project.public_id) }}" role="search">
+    <label class="visually-hidden" for="q">Search titles and excerpts</label>
+    <input class="field__input" id="q" name="q" type="search" value="{{ q }}" placeholder="Search titles, domains and excerpts" maxlength="100">
+    <label class="visually-hidden" for="domain">Domain</label>
+    <select class="field__input" id="domain" name="domain">
+      <option value="">All domains</option>
+      {% for d in domains %}<option value="{{ d }}" {{ "selected" if d == domain }}>{{ d }}</option>{% endfor %}
+    </select>
+    <label class="visually-hidden" for="category">Category</label>
+    <select class="field__input" id="category" name="category">
+      <option value="">All categories</option>
+      {% for cat in categories %}<option value="{{ cat }}" {{ "selected" if cat == category }}>{{ cat|replace("_", " ")|capitalize }}</option>{% endfor %}
+    </select>
+    <label class="visually-hidden" for="status">Show</label>
+    <select class="field__input" id="status" name="status">
+      <option value="">All sources</option>
+      <option value="cited" {{ "selected" if status == "cited" }}>Cited in the report</option>
+      <option value="uncited" {{ "selected" if status == "uncited" }}>Not cited</option>
+      <option value="problems" {{ "selected" if status == "problems" }}>With problems</option>
+    </select>
+    <button class="button button--ghost" type="submit">Filter</button>
+  </form>
+
+  {% if items %}
+  <p class="muted">{{ total }} source(s)</p>
+  <ul class="project-list">
+    {% for it in items %}{% set s = it.source %}
+    <li class="project-card card source">
+      <h2 class="project-card__title"><a href="{{ url_for('editor.source_detail', public_id=project.public_id, source_id=s.id) }}">{{ s.title or s.domain or s.upload_name or "Untitled source" }}</a></h2>
+      <p class="project-card__meta">
+        {% if it.number %}<span class="badge badge--success">Cited as [{{ it.number }}]</span>{% else %}<span class="badge">Not cited</span>{% endif %}
+        <span class="badge">{{ s.category|replace("_", " ")|capitalize }}</span>
+        {% if s.domain %}<span>{{ s.domain }}</span>{% elif s.upload_name %}<span>Uploaded: {{ s.upload_name }}</span>{% endif %}
+        {% if s.published_at %}<span>Published {{ s.published_at.strftime("%Y-%m-%d") }}</span>{% else %}<span>Publication date not stated</span>{% endif %}
+        {% if s.retrieved_at %}<span>Retrieved {{ s.retrieved_at.strftime("%Y-%m-%d %H:%M") }} UTC</span>{% endif %}
+      </p>
+      {% if it.excerpt %}<p class="source__excerpt">{{ it.excerpt }}</p>{% endif %}
+      <p class="project-card__meta">
+        {% if it.question %}<span>For: {{ it.question }}</span>{% endif %}
+        <span>{{ it.claims }} claim link(s)</span>
+        <span class="support support--{{ it.support }}">{{ it.support_label }}</span>
+        {% if it.url %}<a href="{{ it.url }}" target="_blank" rel="noopener noreferrer nofollow">Open source</a>{% endif %}
+      </p>
+      {% for w in it.warnings %}<p class="source__warn">{{ w }}</p>{% endfor %}
+    </li>
+    {% endfor %}
+  </ul>
+  {% if pages > 1 %}
+  <nav class="pager" aria-label="Pages">
+    {% if page > 1 %}<a class="button button--ghost button--small" href="{{ url_for('editor.sources', public_id=project.public_id, q=q, domain=domain, category=category, status=status, page=page-1) }}">Previous</a>{% endif %}
+    <span>Page {{ page }} of {{ pages }}</span>
+    {% if page < pages %}<a class="button button--ghost button--small" href="{{ url_for('editor.sources', public_id=project.public_id, q=q, domain=domain, category=category, status=status, page=page+1) }}">Next</a>{% endif %}
+  </nav>
+  {% endif %}
+  {% else %}
+  <section class="empty-state"><h2>{{ "No sources match" if (q or domain or category or status) else "No sources yet" }}</h2>
+    <p>{{ "Try different filters." if (q or domain or category or status) else "Sources appear here after a run collects them." }}</p></section>
+  {% endif %}
+</section>
+{% endblock %}

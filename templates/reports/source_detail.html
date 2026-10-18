@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}{{ src.title or src.domain or "Source" }} - ResearchPilot AI{% endblock %}
+{% block head_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/research/detail.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/reports/sources.css') }}">{% endblock %}
+{% block content %}
+<article class="source-detail">
+  <header>
+    <p class="eyebrow"><a href="{{ url_for('editor.sources', public_id=project.public_id) }}">&larr; All sources</a></p>
+    <h1>{{ src.title or src.domain or src.upload_name or "Untitled source" }}</h1>
+    <p class="project__meta">
+      {% if number %}Cited in the report as [{{ number }}]{% else %}Not cited in the report{% endif %}
+      &middot; {{ src.category|replace("_", " ") }}
+      &middot; {{ "read in full" if src.fetch_status == "retrieved" else "search snippet only" if src.fetch_status == "snippet_only" else src.fetch_status }}
+    </p>
+  </header>
+  {% for w in warnings %}<p class="report__banner report__banner--warn">{{ w }}</p>{% endfor %}
+  <dl class="facts facts--wide">
+    <div><dt>Address</dt><dd>{% if url %}<a href="{{ url }}" target="_blank" rel="noopener noreferrer nofollow">{{ url }}</a>{% elif src.upload_name %}Uploaded document: {{ src.upload_name }}{% else %}Not available{% endif %}</dd></div>
+    <div><dt>Canonical address</dt><dd>{{ src.canonical_url or "Not available" }}</dd></div>
+    <div><dt>Domain</dt><dd>{{ src.domain or "n/a" }}</dd></div>
+    <div><dt>Published</dt><dd>{{ src.published_at.strftime("%Y-%m-%d") if src.published_at else "Not stated by the source" }}</dd></div>
+    <div><dt>Retrieved</dt><dd>{{ src.retrieved_at.strftime("%Y-%m-%d %H:%M") ~ " UTC" if src.retrieved_at else "Not retrieved" }}</dd></div>
+    <div><dt>Link check</dt><dd>{{ src.link_status }}</dd></div>
+    <div><dt>Research question</dt><dd>{{ question or "n/a" }}</dd></div>
+    <div><dt>Support for its claims</dt><dd><span class="support support--{{ support }}">{{ support_label }}</span></dd></div>
+  </dl>
+
+  <section><h2>Excerpts</h2>
+    {% if excerpts %}
+    <ul class="excerpts">{% for ex in excerpts %}
+      <li><blockquote>{{ ex.text }}</blockquote>
+        <p class="refs__meta">{{ "Verbatim passage" if ex.is_verbatim else "Paraphrase" }}{% if ex.locator %} &middot; {{ ex.locator }}{% endif %}</p></li>
+    {% endfor %}</ul>
+    {% else %}<p class="muted">No excerpt was stored for this source.</p>{% endif %}
+  </section>
+
+  <section><h2>Claims that use this source</h2>
+    {% if claims %}
+    <ul class="claims">{% for item in claims %}
+      <li><p>{{ item.claim.text }}</p>
+        <p class="refs__meta">{{ item.link.relation }} &middot; {{ item.link.support_level }}{% if item.claim.confidence is not none %} &middot; analyst confidence {{ "%.2f"|format(item.claim.confidence) }}{% endif %}</p></li>
+    {% endfor %}</ul>
+    <p class="muted">"Unreviewed" means no check has judged whether the excerpt supports the claim.</p>
+    {% else %}<p class="muted">No claim uses this source.</p>{% endif %}
+  </section>
+
+  <section><h2>Used in the report</h2>
+    {% if used_in %}<ul>{% for s in used_in %}<li><a href="{{ url_for('editor.edit', public_id=project.public_id, section=s.key) }}">{{ s.heading }}</a></li>{% endfor %}</ul>
+    {% else %}<p class="muted">No section cites this source.</p>{% endif %}
+  </section>
+</article>
+{% endblock %}

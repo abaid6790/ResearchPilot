@@ -20,15 +20,68 @@
   <section class="card" aria-labelledby="run-title">
     <h2 class="card__title" id="run-title">Run</h2>
     {% if active_job %}
-      <p>A run is in progress: <strong>{{ active_job.status|capitalize }}</strong>.</p>
-    {% elif jobs %}
-      <p>Last run: <strong>{{ jobs[0].status|replace('_', ' ')|capitalize }}</strong>.</p>
+      <div class="run" data-job-panel data-events-url="{{ url_for('research.job_events', public_id=project.public_id, job_id=active_job.public_id) }}"
+           data-stream-url="{{ url_for('research.job_stream', public_id=project.public_id, job_id=active_job.public_id) }}"
+           data-after="{{ active_job.event_seq }}">
+        <p class="run__status"><span class="spinner" aria-hidden="true"></span>
+          <strong data-run-stage>{{ active_job.status|capitalize }}</strong>
+          <span class="muted" data-run-note>This keeps running if you leave the page.</span></p>
+        <ol class="steps" aria-label="Stages">
+          {% for key, label in [("planning","Plan"),("researching","Research"),("analyzing","Analyse"),("writing","Write"),("reviewing","Review"),("validating","Check")] %}
+          <li data-step="{{ key }}"{% if active_job.status == key %} class="is-current" aria-current="step"{% endif %}>{{ label }}</li>
+          {% endfor %}
+        </ol>
+        <dl class="facts" data-run-facts>
+          <div><dt>Searches</dt><dd data-fact="queries">{{ summary.queries }}</dd></div>
+          <div><dt>Sources</dt><dd data-fact="sources">{{ summary.sources }}</dd></div>
+          <div><dt>Read in full</dt><dd data-fact="sources_read">{{ summary.sources_read }}</dd></div>
+          <div><dt>Claims</dt><dd data-fact="claims">{{ summary.claims }}</dd></div>
+          <div><dt>Research rounds</dt><dd data-fact="research_round">{{ summary.research_round }}</dd></div>
+          <div><dt>Revision rounds</dt><dd data-fact="revision_round">{{ summary.revision_round }}</dd></div>
+          <div><dt>Warnings</dt><dd data-fact="problems">{{ summary.problems }}</dd></div>
+        </dl>
+        <ul class="tasks" data-run-tasks aria-label="Subtopics">
+          {% for t in summary.tasks %}<li class="tasks__item tasks__item--{{ t.status }}"><span class="tasks__state">{{ t.status|replace("running", "in progress")|capitalize }}</span> {{ t.title }}</li>{% endfor %}
+        </ul>
+        <ul class="log" data-run-log aria-live="polite" aria-label="Progress">
+          {% for e in recent %}<li class="log__item log__item--{{ e.level }}"><time>{{ e.created_at.strftime("%H:%M:%S") }}</time> {{ e.message }}</li>{% endfor %}
+        </ul>
+        <form method="post" action="{{ url_for('research.cancel', public_id=project.public_id, job_id=active_job.public_id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="button button--ghost" type="submit">Stop this run</button>
+        </form>
+      </div>
     {% else %}
-      <p>No run has been started.</p>
+      {% if shown %}
+        <p>Last run: <strong>{{ shown.status|replace('_', ' ')|capitalize }}</strong>
+          {% if shown.status == 'completed_with_warnings' %}<span class="badge badge--warning">Needs your attention</span>{% endif %}</p>
+        {% if shown.error_message %}<p class="notice notice--error">{{ shown.error_message }}</p>{% endif %}
+        {% if shown.unresolved_issues %}
+          <details class="issues"><summary>{{ shown.unresolved_issues|length }} note(s) about this run</summary>
+            <ul>{% for i in shown.unresolved_issues %}<li><span class="badge badge--{{ 'warning' if i.severity == 'major' else 'neutral' }}">{{ i.severity }}</span> {{ i.detail }}</li>{% endfor %}</ul>
+          </details>
+        {% endif %}
+        {% if report_count %}<p><a class="button button--primary" href="{{ url_for('research.report', public_id=project.public_id) }}">Open the report</a>
+          <a class="button button--ghost" href="{{ url_for('editor.sources', public_id=project.public_id) }}">Source explorer</a></p>{% endif %}
+      {% else %}
+        <p>No run has been started.</p>
+      {% endif %}
+      <div class="manage">
+        {% if not project.archived_at %}
+        <form method="post" action="{{ url_for('research.start', public_id=project.public_id) }}" data-loading>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="button {{ 'button--ghost' if shown else 'button--primary' }}" type="submit">{{ "Run again" if shown else "Start research" }}</button>
+        </form>
+        {% endif %}
+        {% if shown and can_resume(shown) %}
+        <form method="post" action="{{ url_for('research.resume', public_id=project.public_id, job_id=shown.public_id) }}" data-loading>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="button button--primary" type="submit">Resume from saved progress</button>
+        </form>
+        {% endif %}
+      </div>
+      <p class="field__hint">A run searches the web and calls AI providers, which uses your API quota. Deeper settings use more.</p>
     {% endif %}
-    <p class="notice">Running research (searching the web, the agents and the report) is not available in this
-      build yet, so there is no button to start one. Your project and its settings are saved and will be
-      ready when it is.</p>
   </section>
 
   <div class="project__grid">
@@ -112,4 +165,5 @@
 </article>
 {% endblock %}
 
-{% block scripts %}<script src="{{ url_for('static', filename='js/research/detail.js') }}" defer></script>{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/research/detail.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/research/progress.js') }}" defer></script>{% endblock %}

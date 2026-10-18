@@ -1,0 +1,29 @@
+.editor { display: grid; gap: var(--space-4); }
+.editor__tools { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-3); }
+.editor__grid { display: grid; gap: var(--space-5); grid-template-columns: 1fr; }
+@media (min-width: 900px) { .editor__grid { grid-template-columns: 14rem 1fr; align-items: start; } }
+.outline { position: sticky; top: 4.5rem; }
+.outline ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.25rem; }
+.outline a { display: block; padding: 0.35rem 0.6rem; border-radius: var(--radius-sm); color: var(--ink-soft); text-decoration: none; }
+.outline a:hover { background: var(--surface-2); }
+.outline a[aria-current="page"] { background: var(--info-soft); color: var(--ink); font-weight: 600; }
+.outline__title { font-size: var(--text-sm); text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-faint); }
+.editor__main { display: grid; gap: var(--space-4); min-width: 0; }
+.editor__text { width: 100%; min-height: 14rem; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.9rem; line-height: 1.55; resize: vertical; }
+.editor__actions { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; }
+.editor__status { color: var(--ink-faint); font-size: var(--text-sm); }
+.editor__status--error { color: var(--danger); }
+.editor__panel { border: 1px solid var(--line); border-radius: var(--radius); padding: var(--space-4); background: var(--surface); }
+.editor__panel h3 { margin-top: 0; font-size: var(--text-base); }
+.editor__panel ul { margin: 0; padding-left: 1.2rem; }
+.bad { color: var(--warning); }
+.editor__critique { margin-top: var(--space-4); display: grid; gap: var(--space-2); justify-items: start; }
+.diff { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.85rem; border: 1px solid var(--line); border-radius: var(--radius-sm); overflow-x: auto; margin: var(--space-2) 0; }
+.diff__line { display: grid; grid-template-columns: 1.4rem 1fr; white-space: pre-wrap; overflow-wrap: anywhere; padding: 0 var(--space-2); }
+.diff__line--add { background: var(--success-soft); }
+.diff__line--del { background: var(--danger-soft); }
+.history { list-style: none; padding: 0 !important; display: grid; gap: var(--space-2); }
+.history li { display: flex; flex-wrap: wrap; gap: var(--space-2); justify-content: space-between; align-items: center; }
+.history__actions { display: flex; gap: var(--space-2); align-items: center; }
+.history__actions form { margin: 0; }
+.proposal + .proposal { margin-top: var(--space-4); border-top: 1px solid var(--line); padding-top: var(--space-4); }

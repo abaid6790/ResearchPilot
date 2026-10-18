@@ -1,0 +1,30 @@
+/* App shell: sidebar on wide screens, slide-in drawer on narrow ones */
+.shell { display: grid; grid-template-columns: 1fr; flex: 1; min-height: 0; }
+.shell__main { display: flex; flex-direction: column; min-width: 0; }
+body { display: flex; flex-direction: column; min-height: 100vh; }
+.navbar__menu { display: none; }
+
+.sidebar { background: var(--surface); border-right: 1px solid var(--line); padding: var(--space-4) var(--space-3); }
+.sidebar__list { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.sidebar__link { display: flex; align-items: center; gap: var(--space-3); padding: 0.55rem 0.75rem; border-radius: var(--radius-sm); color: var(--ink-soft); text-decoration: none; font-weight: 500; }
+.sidebar__link:hover { background: var(--surface-2); color: var(--ink); }
+.sidebar__link.is-active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.sidebar__link:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+@media (min-width: 900px) {
+  .shell:not(.shell--bare) { grid-template-columns: 15rem 1fr; }
+  .sidebar { position: sticky; top: 3.6rem; align-self: start; height: calc(100vh - 3.6rem); overflow-y: auto; }
+}
+@media (max-width: 899px) {
+  .navbar__menu { display: inline-flex; }
+  .sidebar { position: fixed; z-index: 60; top: 0; left: 0; bottom: 0; width: min(18rem, 85vw); transform: translateX(-100%); transition: transform var(--transition); padding-top: 4.5rem; box-shadow: var(--shadow); visibility: hidden; }
+  .sidebar.is-open { transform: none; visibility: visible; }
+  .sidebar-backdrop { position: fixed; inset: 0; z-index: 55; background: rgba(10, 16, 24, 0.55); }
+}
+@media (prefers-reduced-motion: reduce) { .sidebar { transition: none; } }
+
+/* Loading states */
+button.is-loading, .button.is-loading { position: relative; cursor: progress; opacity: 0.85; }
+button.is-loading::after { content: ""; display: inline-block; width: 0.85em; height: 0.85em; margin-left: 0.5rem; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: -0.1em; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { button.is-loading::after { animation: none; } }

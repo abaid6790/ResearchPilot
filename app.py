@@ -116,11 +116,12 @@ def _register_blueprints(app: Flask) -> None:
     from dashboard.routes import bp as dashboard_bp
     from providers import usage  # noqa: F401
     from reports import models as report_models  # noqa: F401
+    from reports.routes import bp as editor_bp
     from research import models as research_models  # noqa: F401
     from research.routes import bp as research_bp
     from settings.routes import bp as settings_bp
 
-    for blueprint in (health_bp, auth_bp, dashboard_bp, research_bp, settings_bp):
+    for blueprint in (health_bp, auth_bp, dashboard_bp, research_bp, editor_bp, settings_bp):
         app.register_blueprint(blueprint)
 
 

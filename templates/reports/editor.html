@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block title %}Edit report - {{ report.title }} - ResearchPilot AI{% endblock %}
+{% block head_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/research/detail.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/reports/editor.css') }}">{% endblock %}
+{% macro csrf() %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endmacro %}
+{% block content %}
+<div class="editor" data-editor data-save-url="{{ url_for('editor.save', public_id=project.public_id, key=section.key) }}"
+     data-critique-url="{{ url_for('editor.critique', public_id=project.public_id, key=section.key) }}"
+     data-text-url="{{ url_for('editor.text', public_id=project.public_id) }}"
+     data-csrf="{{ csrf_token() }}" data-version="{{ section.version }}">
+  <header class="editor__head">
+    <p class="eyebrow"><a href="{{ url_for('research.report', public_id=project.public_id) }}">&larr; Report view</a></p>
+    <h1>Edit report</h1>
+    <p class="project__meta">{{ report.title }}</p>
+    <div class="editor__tools">
+      <button class="button button--ghost button--small" type="button" data-copy-report>Copy report text</button>
+      <a class="button button--ghost button--small" href="{{ url_for('editor.sources', public_id=project.public_id) }}">Source explorer</a>
+      <span class="visually-hidden" role="status" data-copy-status></span>
+    </div>
+  </header>
+
+  {% if not report.export_ready %}
+  <p class="report__banner report__banner--warn">This report is not marked as checked. {% if sections|selectattr("edited_by_user")|list %}It has been edited since the automatic checks ran, so those results no longer apply.{% else %}The automatic checks found problems; see the Limitations section.{% endif %}</p>
+  {% endif %}
+  {% if busy %}<p class="report__banner report__banner--warn">The run that wrote this report is still active, so editing is paused.</p>{% endif %}
+
+  <div class="editor__grid">
+    <nav class="outline" aria-label="Report outline">
+      <h2 class="outline__title">Outline</h2>
+      <ol>
+        {% for s in sections %}
+        <li><a href="{{ url_for('editor.edit', public_id=project.public_id, section=s.key) }}" {% if s.key == section.key %}aria-current="page"{% endif %}>{{ s.heading }}</a>
+          {% if s.edited_by_user %}<span class="badge">edited</span>{% endif %}</li>
+        {% endfor %}
+      </ol>
+    </nav>
+
+    <div class="editor__main">
+      <form method="post" action="{{ url_for('editor.save', public_id=project.public_id, key=section.key) }}" data-loading data-editor-form>
+        {{ csrf() }}
+        <input type="hidden" name="version" value="{{ section.version }}" data-version-field>
+        <h2 id="section-title">{{ section.heading }}</h2>
+        <label class="visually-hidden" for="body">Text of {{ section.heading }}</label>
+        <textarea class="field__input editor__text" id="body" name="body" rows="16" maxlength="{{ max_body }}" {{ "readonly" if busy }} data-body>{{ section.body }}</textarea>
+        <p class="field__hint">Markdown. Cite sources with markers like [@S12]; they are shown as numbered links. Only sources collected for this report can be cited.</p>
+        <div class="editor__actions">
+          <button class="button button--primary" type="submit" {{ "disabled" if busy }}>Save</button>
+          <span class="editor__status" role="status" aria-live="polite" data-save-status>Saved text is version {{ section.version }}.</span>
+        </div>
+      </form>
+
+      <section aria-labelledby="checks-title" class="editor__panel" data-checks>
+        <h3 id="checks-title">Automatic citation checks</h3>
+        <ul data-checks-list>
+          {% if checks.ok %}<li>No problems found in this section. This does not prove the statements are correct.</li>{% endif %}
+          {% if checks.invalid_citations %}<li class="bad">{{ checks.invalid_citations|length }} citation marker(s) point at sources that are not part of this report.</li>{% endif %}
+          {% if checks.unverified_quotes %}<li class="bad">{{ checks.unverified_quotes|length }} quotation(s) were not found in the cited sources.</li>{% endif %}
+          {% if checks.uncited_paragraphs %}<li class="bad">{{ checks.uncited_paragraphs }} long paragraph(s) have no citation.</li>{% endif %}
+        </ul>
+      </section>
+
+      <section aria-labelledby="cited-title" class="editor__panel">
+        <h3 id="cited-title">Sources cited here</h3>
+        {% if cited %}<ul>
+          {% for c in cited %}<li>{% if c.source %}<a href="{{ url_for('editor.source_detail', public_id=project.public_id, source_id=c.source.id) }}">{{ c.source.title or c.source.domain or c.source.upload_name }}</a>{% if c.source.fetch_status == "snippet_only" %} <span class="badge badge--warning">snippet only</span>{% endif %}{% else %}<span class="bad">Unknown source S{{ c.id }}</span>{% endif %}</li>{% endfor %}
+        </ul>{% else %}<p class="muted">This section cites no sources.</p>{% endif %}
+      </section>
+
+      <section aria-labelledby="ai-title" class="editor__panel">
+        <h3 id="ai-title">Ask for help</h3>
+        <form method="post" action="{{ url_for('editor.regenerate', public_id=project.public_id, key=section.key) }}" data-loading>
+          {{ csrf() }}
+          <label class="field__label" for="instruction">Rewrite this section (optional instruction)</label>
+          <input class="field__input" id="instruction" name="instruction" maxlength="300" placeholder="For example: shorter and less technical" {{ "disabled" if busy }}>
+          <p class="field__hint">The suggestion is shown next to your text. Nothing changes until you apply it.</p>
+          <button class="button button--ghost" type="submit" {{ "disabled" if busy }}>Suggest a rewrite</button>
+        </form>
+        <div class="editor__critique">
+          <button class="button button--ghost" type="button" data-critique {{ "disabled" if busy }}>Critique this section</button>
+          <div data-critique-result aria-live="polite"></div>
+        </div>
+      </section>
+
+      <section id="proposals" aria-labelledby="prop-title" class="editor__panel">
+        <h3 id="prop-title">Suggested rewrites</h3>
+        {% if proposals %}{% for p in proposals %}
+        <div class="proposal">
+          <p class="refs__meta">{{ p.change_summary }}{% if p.structure and p.structure.removed_citations %} &middot; {{ p.structure.removed_citations|length }} unsupported citation(s) were removed{% endif %}</p>
+          <div class="diff" role="group" aria-label="Changes if applied">
+            {% for l in p.diff %}<div class="diff__line diff__line--{{ l.op }}"><span aria-hidden="true">{{ "+" if l.op == "add" else "-" if l.op == "del" else " " }}</span><span>{% if l.op == "add" %}<span class="visually-hidden">Added: </span>{% elif l.op == "del" %}<span class="visually-hidden">Removed: </span>{% endif %}{{ l.text }}</span></div>{% endfor %}
+          </div>
+          <div class="editor__actions">
+            <form method="post" action="{{ url_for('editor.revision_action', public_id=project.public_id, revision_id=p.id, action='apply') }}" data-loading>{{ csrf() }}<button class="button button--primary button--small" type="submit">Apply</button></form>
+            <form method="post" action="{{ url_for('editor.revision_action', public_id=project.public_id, revision_id=p.id, action='discard') }}" data-loading>{{ csrf() }}<button class="button button--ghost button--small" type="submit">Discard</button></form>
+          </div>
+        </div>
+        {% endfor %}{% else %}<p class="muted">No pending suggestions.</p>{% endif %}
+      </section>
+
+      {% if compare %}
+      <section id="compare" aria-labelledby="cmp-title" class="editor__panel">
+        <h3 id="cmp-title">Version {{ compare.revision.revision_no }} compared with the current text</h3>
+        <div class="diff">{% for l in compare.lines %}<div class="diff__line diff__line--{{ l.op }}"><span aria-hidden="true">{{ "+" if l.op == "add" else "-" if l.op == "del" else " " }}</span><span>{{ l.text }}</span></div>{% endfor %}</div>
+        <p class="field__hint">Lines marked - are only in version {{ compare.revision.revision_no }}; lines marked + are only in the current text.</p>
+      </section>
+      {% endif %}
+
+      <section aria-labelledby="hist-title" class="editor__panel">
+        <h3 id="hist-title">Version history</h3>
+        {% if revisions %}<ul class="history">
+          {% for r in revisions %}
+          <li><span><strong>v{{ r.revision_no }}</strong> {{ r.change_summary or r.source|replace("_", " ") }} &middot; {{ r.created_at.strftime("%d %b %H:%M") }} UTC</span>
+            <span class="history__actions">
+              <a class="button button--ghost button--small" href="{{ url_for('editor.edit', public_id=project.public_id, section=section.key, compare=r.id) }}#compare">Compare</a>
+              <form method="post" action="{{ url_for('editor.revision_action', public_id=project.public_id, revision_id=r.id, action='restore') }}" data-loading>{{ csrf() }}<input type="hidden" name="version" value="{{ section.version }}"><button class="button button--ghost button--small" type="submit" {{ "disabled" if busy }}>Restore</button></form>
+            </span></li>
+          {% endfor %}
+        </ul>{% else %}<p class="muted">No saved versions of this section yet.</p>{% endif %}
+      </section>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/reports/editor.js') }}" defer></script>{% endblock %}

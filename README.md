@@ -2,10 +2,10 @@
 
 A multi-agent research and report platform built with Flask, PostgreSQL and LangGraph.
 
-> **Build status: Phases 0-6 of 13 complete.** The foundation, the account system, the LLM
+> **Build status: Phases 0-9 of 13 complete.** The foundation, the account system, the LLM
 > provider layer (with key rotation and fallback), the research/report database schema and the
 > research tools (Tavily search, safe page fetching, document reading, uploads) work and are tested.
-> The research agents and workflow work from the command line (`flask run-research`). The web "Start research" button, background runs, report editor and exports are **not built yet** (see [docs/PROGRESS.md](docs/PROGRESS.md)). Nothing in the UI pretends otherwise.
+> Research runs start from the project page, run in the background with live progress, and produce a read-only cited report. The report editor, source explorer, quality scoring and exports are **not built yet** (see [docs/PROGRESS.md](docs/PROGRESS.md)). Nothing in the UI pretends otherwise.
 
 ## What works today
 
@@ -51,6 +51,7 @@ python scripts/check_env.py --live   # also verifies each API key with the provi
 | [docs/ENVIRONMENT_SETUP.md](docs/ENVIRONMENT_SETUP.md) | Every environment variable |
 | [docs/DATABASE_SETUP.md](docs/DATABASE_SETUP.md) | PostgreSQL, migrations, troubleshooting |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Structure, request flow, security decisions |
+| [docs/BACKGROUND_JOBS.md](docs/BACKGROUND_JOBS.md) | Runners, Celery, progress stream, recovery |
 | [docs/AGENTS.md](docs/AGENTS.md) | The agents, workflow, guarantees and limits |
 | [docs/SECURITY.md](docs/SECURITY.md) | SSRF, prompt-injection and upload handling, and what is not covered |
 | [docs/PROGRESS.md](docs/PROGRESS.md) | Phase status and known limitations |

@@ -79,3 +79,16 @@ class PairVerdict(BaseModel):
 
 class ValidationBatch(BaseModel):
     verdicts: list[PairVerdict] = Field(max_length=12)
+
+
+class CritiqueNote(BaseModel):
+    severity: Literal["minor", "major"]
+    problem: str = Field(max_length=500)
+    suggestion: str = Field(default="", max_length=500)
+
+
+class SectionCritique(BaseModel):
+    """A critique of one section on request. Advice only: nothing in it changes the report."""
+
+    assessment: str = Field(default="", max_length=800)
+    notes: list[CritiqueNote] = Field(default_factory=list, max_length=10)

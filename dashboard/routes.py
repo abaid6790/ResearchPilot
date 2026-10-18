@@ -52,4 +52,55 @@ def index():
         .order_by(ResearchProject.created_at.desc(), ResearchProject.id.desc())
         .limit(5)
     ).all()
-    return render_template("dashboard/index.html", stats=stats, recent=recent)
+    activity = _recent_activity()
+    usage = _usage_this_month()
+    return render_template("dashboard/index.html", stats=stats, recent=recent, activity=activity, usage=usage)
+
+
+def _recent_activity(limit: int = 8):
+    """Latest progress events across the user's runs (only events that mark something happening)."""
+    from research.models import ResearchJobEvent
+
+    kinds = (
+        "job_queued",
+        "job_completed",
+        "job_failed",
+        "job_cancelled",
+        "job_resumed",
+        "plan_ready",
+        "critic_review",
+    )
+    return db.session.execute(
+        select(ResearchJobEvent, ResearchProject)
+        .join(ResearchJob, ResearchJob.id == ResearchJobEvent.job_id)
+        .join(ResearchProject, ResearchProject.id == ResearchJob.project_id)
+        .where(ResearchProject.user_id == current_user.id, ResearchJobEvent.event_type.in_(kinds))
+        .order_by(ResearchJobEvent.created_at.desc(), ResearchJobEvent.id.desc())
+        .limit(limit)
+    ).all()
+
+
+def _usage_this_month():
+    """Real provider call counts and tokens recorded for this user this calendar month (UTC)."""
+    from core.db_utils import utcnow
+    from providers.usage import ProviderUsage
+
+    now = utcnow()
+    start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    rows = db.session.execute(
+        select(
+            ProviderUsage.provider,
+            func.count(),
+            func.sum(
+                func.coalesce(ProviderUsage.prompt_tokens, 0)
+                + func.coalesce(ProviderUsage.completion_tokens, 0)
+            ),
+            func.sum(db.case((ProviderUsage.outcome == "ok", 0), else_=1)),
+        )
+        .where(ProviderUsage.user_id == current_user.id, ProviderUsage.created_at >= start)
+        .group_by(ProviderUsage.provider)
+        .order_by(ProviderUsage.provider)
+    ).all()
+    return [
+        {"provider": p, "calls": int(c), "tokens": int(t or 0), "failed": int(f or 0)} for p, c, t, f in rows
+    ]

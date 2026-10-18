@@ -1,0 +1,16 @@
+/* Report view */
+.report { display: grid; gap: var(--space-5); max-width: 52rem; margin-inline: auto; }
+.report__banner { border-radius: var(--radius-sm); padding: var(--space-3) var(--space-4); }
+.report__banner--warn { background: var(--warning-soft); color: var(--warning); }
+.report__banner--ok { background: var(--success-soft); color: var(--success); }
+.report__section h2 { margin-top: var(--space-5); }
+.report__section { overflow-wrap: anywhere; line-height: 1.65; }
+.report table { border-collapse: collapse; width: 100%; display: block; overflow-x: auto; }
+.report th, .report td { border: 1px solid var(--line); padding: 0.35rem 0.6rem; text-align: left; }
+.cite a { text-decoration: none; font-size: 0.8em; padding: 0 0.1em; }
+.refs { padding-left: 0; list-style: none; display: grid; gap: var(--space-3); }
+.refs li { display: grid; gap: 0.2rem; }
+.refs__meta { color: var(--ink-faint); font-size: 0.85rem; }
+.refs__warn { color: var(--warning); font-size: 0.85rem; }
+.refs :target { background: var(--info-soft); border-radius: var(--radius-sm); }
+.report__tools { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: var(--space-3) 0 0; }

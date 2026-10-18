@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any, TypeVar
@@ -45,6 +46,7 @@ class AgentContext:
     fetch_workers: int = 4
     llm_calls: int = field(default=0)
     llm_failures: int = field(default=0)
+    _last_beat: float = field(default=0.0, repr=False)
 
     # ---------------------------------------------------------------- data access
     @property
@@ -60,10 +62,24 @@ class AgentContext:
         return ResearchSettings.model_validate(self.job.config_snapshot)
 
     # ---------------------------------------------------------------- progress
+    def heartbeat(self, force: bool = False) -> None:
+        """Tell the job dispatcher this run is alive (throttled to one write per 10 seconds)."""
+        now = time.monotonic()
+        if not force and now - self._last_beat < 10:
+            return
+        self._last_beat = now
+        from sqlalchemy import update
+
+        db.session.execute(
+            update(ResearchJob).where(ResearchJob.id == self.job_id).values(heartbeat_at=utcnow())
+        )
+        db.session.commit()
+
     def event(self, event_type: str, message: str, *, level: str = "info", stage: str | None = None,
               agent: str | None = None, data: dict | None = None) -> None:  # fmt: skip
         append_event(self.job, event_type, message, level=level, stage=stage, agent=agent, data=data)
         db.session.commit()
+        self.heartbeat()
 
     def set_stage(self, status: str, agent: str, message: str) -> None:
         job = self.job
@@ -76,6 +92,7 @@ class AgentContext:
         db.session.commit()
 
     def check_cancel(self) -> None:
+        self.heartbeat()
         db.session.expire(self.job, ["cancel_requested_at"])
         if self.job.cancel_requested_at is not None:
             raise Cancelled

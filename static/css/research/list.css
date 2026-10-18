@@ -9,3 +9,4 @@
 .project-card__topic { color: var(--ink-soft); margin: 0 0 var(--space-2); overflow-wrap: anywhere; }
 .project-card__meta { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; margin: 0; font-size: var(--text-sm); color: var(--ink-faint); }
 .pager { display: flex; justify-content: center; align-items: center; gap: var(--space-4); margin-top: var(--space-5); }
+.list-filters--two { grid-template-columns: 1fr auto; }

@@ -61,3 +61,10 @@ VALIDATOR = (
     "the excerpt states it, 'partial' if it supports only part of it or with weaker wording, 'unrelated' if "
     "it does not support it. A source merely being on topic is not support."
 )
+
+SECTION_CRITIC = (
+    COMMON + " You are the Critic. The user asks for a critique of one report section. Compare it with the "
+    "claims it may rely on. Point out sentences that go beyond the claims, overstatement, unclear passages, "
+    "missing caveats and uncited factual statements. Do not rewrite the section. Return an empty list if "
+    "you find nothing; do not praise."
+)
