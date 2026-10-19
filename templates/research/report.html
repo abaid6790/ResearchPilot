@@ -11,7 +11,9 @@
     <p class="report__tools">
       <a class="button button--primary button--small" href="{{ url_for('editor.edit', public_id=project.public_id) }}">Edit report</a>
       <a class="button button--ghost button--small" href="{{ url_for('editor.sources', public_id=project.public_id) }}">Source explorer</a>
+      <a class="button button--ghost button--small" href="{{ url_for('editor.quality_page', public_id=project.public_id) }}">Quality</a>
     </p>
+    {% include "reports/_export_links.html" %}
   </header>
 
   {% if report.export_ready %}

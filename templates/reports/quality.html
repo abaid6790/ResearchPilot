@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Report quality - {{ report.title }} - ResearchPilot AI{% endblock %}
+{% block head_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/research/detail.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/reports/quality.css') }}">{% endblock %}
+{% macro csrf() %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endmacro %}
+{% macro score(v) %}{% if v is none %}<span class="muted">not assessed</span>{% else %}<strong>{{ "%.0f"|format(v) }}</strong><span class="muted">/100</span>{% endif %}{% endmacro %}
+{% block content %}
+<article class="quality">
+  <header>
+    <p class="eyebrow"><a href="{{ url_for('research.report', public_id=project.public_id) }}">&larr; Report view</a></p>
+    <h1>Report quality</h1>
+    <p class="project__meta">{{ report.title }}</p>
+  </header>
+
+  {% if evaluation.gates_passed and report.export_ready %}
+    <p class="report__banner report__banner--ok">All quality gates pass on the current text. This does not prove every statement is correct: check important ones against the sources.</p>
+  {% else %}
+    <p class="report__banner report__banner--warn"><strong>Not fully verified.</strong> {% if evaluation.gates_passed %}The gates pass on the current text, but the saved result is out of date. Re-run the checks to update it.{% else %}At least one quality gate fails. Exports are still possible but will say so.{% endif %}</p>
+  {% endif %}
+
+  <div class="quality__actions">
+    <form method="post" action="{{ url_for('editor.quality_run', public_id=project.public_id) }}" data-loading>{{ csrf() }}<button class="button button--primary" type="submit" {{ "disabled" if busy }}>Re-run checks</button></form>
+    <form method="post" action="{{ url_for('editor.quality_assess', public_id=project.public_id) }}" data-loading>{{ csrf() }}<button class="button button--ghost" type="submit" {{ "disabled" if busy }}>Add AI assessment</button></form>
+    <span class="muted">Re-running stores the result and updates the "checked" mark. It uses no AI calls.</span>
+  </div>
+
+  <section aria-labelledby="overall-title">
+    <h2 id="overall-title">Calculated score</h2>
+    <p class="quality__overall">{{ score(overall.score) }}</p>
+    <p class="muted">{{ overall.method }} It measures how well the report is built and cited from its evidence, not whether its statements are true.</p>
+  </section>
+
+  <section aria-labelledby="gates-title">
+    <h2 id="gates-title">Quality gates</h2>
+    <ul class="gates">
+      {% for g in evaluation.gates %}<li class="gate gate--{{ 'pass' if g.passed else 'fail' }}"><span class="gate__state">{{ "Pass" if g.passed else "Fail" }}</span> {{ g.label }}{% if g.detail %} <span class="muted">{{ g.detail }}</span>{% endif %}</li>{% endfor %}
+    </ul>
+  </section>
+
+  <section aria-labelledby="dims-title">
+    <h2 id="dims-title">Scores by dimension (calculated by code)</h2>
+    <div class="table-wrap"><table class="dims">
+      <thead><tr><th scope="col">Dimension</th><th scope="col">Score</th><th scope="col">Weight</th><th scope="col">How it is calculated</th></tr></thead>
+      <tbody>{% for s in dims %}
+        <tr><th scope="row">{{ labels[s.dimension] }}</th><td>{{ score(s.score) }}</td><td>{{ weights.get(s.dimension, "-") }}</td><td>{{ s.method }}</td></tr>{% endfor %}
+      </tbody></table></div>
+  </section>
+
+  <section aria-labelledby="warn-title">
+    <h2 id="warn-title">Warnings</h2>
+    {% if evaluation.warnings %}<ul class="warns">{% for w in evaluation.warnings %}<li>{{ w.text }}</li>{% endfor %}</ul>
+    {% else %}<p class="muted">The checks found nothing to warn about.</p>{% endif %}
+  </section>
+
+  <section aria-labelledby="ai-title">
+    <h2 id="ai-title">AI assessment (an opinion)</h2>
+    <p class="muted">A model read the report against a written rubric. It cannot verify facts, and these scores do not affect the gates.</p>
+    {% if opinions %}
+    <div class="table-wrap"><table class="dims"><thead><tr><th scope="col">Dimension</th><th scope="col">Score</th><th scope="col">Rationale</th></tr></thead>
+      <tbody>{% for o in opinions %}<tr><th scope="row">{{ labels.get(o.dimension, o.dimension) }}</th><td>{{ score(o.score) }}</td><td>{{ o.details.get("rationale", "") if o.details else "" }}</td></tr>{% endfor %}</tbody></table></div>
+    {% else %}<p class="muted">No AI assessment has been requested.</p>{% endif %}
+  </section>
+
+  <section aria-labelledby="exp-title">
+    <h2 id="exp-title">Export</h2>
+    {% include "reports/_export_links.html" %}
+  </section>
+</article>
+{% endblock %}

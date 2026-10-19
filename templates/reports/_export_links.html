@@ -1,0 +1,8 @@
+<p class="export-links">
+  <a class="button button--ghost button--small" href="{{ url_for('editor.export_report', public_id=project.public_id, fmt='pdf') }}">PDF</a>
+  <a class="button button--ghost button--small" href="{{ url_for('editor.export_report', public_id=project.public_id, fmt='docx') }}">Word (.docx)</a>
+  <a class="button button--ghost button--small" href="{{ url_for('editor.export_report', public_id=project.public_id, fmt='md') }}">Markdown</a>
+  <a class="button button--ghost button--small" href="{{ url_for('editor.export_report', public_id=project.public_id, fmt='html') }}">HTML</a>
+</p>
+{% if not report.export_ready %}<p class="muted">This report is not marked as checked, so its exports start with a notice and list the quality warnings.</p>{% endif %}
+<p class="muted">The PDF uses a fixed font and cannot draw some scripts (for example Arabic or Urdu); use Word or HTML for those.</p>

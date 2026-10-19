@@ -92,3 +92,15 @@ class SectionCritique(BaseModel):
 
     assessment: str = Field(default="", max_length=800)
     notes: list[CritiqueNote] = Field(default_factory=list, max_length=10)
+
+
+class DimensionOpinion(BaseModel):
+    dimension: Literal["clarity_structure", "completeness", "question_coverage"]
+    score: int = Field(ge=0, le=100)
+    rationale: str = Field(default="", max_length=500)
+
+
+class QualityOpinion(BaseModel):
+    """An AI reader's rubric-based opinion. It is not a fact check and is stored as such."""
+
+    opinions: list[DimensionOpinion] = Field(default_factory=list, max_length=3)

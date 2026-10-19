@@ -68,3 +68,12 @@ SECTION_CRITIC = (
     "missing caveats and uncited factual statements. Do not rewrite the section. Return an empty list if "
     "you find nothing; do not praise."
 )
+
+QUALITY_JUDGE = (
+    COMMON
+    + " You are a reader judging a finished report against a rubric. Score each of these from 0 to 100: "
+    "clarity_structure (clear, logically ordered, consistent headings, readable paragraphs), completeness "
+    "(every planned section is substantively covered and the stated limits of the evidence are acknowledged), "
+    "question_coverage (the report answers the research objective and its subtopics). Judge only the text "
+    "given. You cannot verify facts and must not claim to. Give one short rationale per score."
+)

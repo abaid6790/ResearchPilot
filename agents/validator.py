@@ -220,8 +220,11 @@ def finalize(ctx: AgentContext, issues: list[dict]) -> None:
         summary="Validated version",
     )
     major = [i for i in issues if i["severity"] == "major"]
+    from reports.quality import persist
+
+    _, evaluation = persist(report)  # stores the scores and the checked flag (gates)
     report.last_validated_at = utcnow()
-    report.export_ready = not major
+    report.export_ready = not major and evaluation.gates_passed
     status = c.JOB_COMPLETED_WITH_WARNINGS if major else c.JOB_COMPLETED
     ctx.finish(status, issues=issues[:50])
     ctx.event("job_completed", "Research finished" + (" with warnings." if major else "."), stage=status, agent="system",

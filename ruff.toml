@@ -7,7 +7,7 @@ select = ["E", "F", "W", "I", "B", "UP", "S", "BLE"]
 ignore = ["S101", "B008"]
 
 [lint.per-file-ignores]
-"tests/*" = ["S105", "S106", "S311", "S104", "BLE001", "E501"]
+"tests/*" = ["S105", "S106", "S311", "S104", "BLE001", "E501", "F811"]
 "scripts/*" = ["S101", "BLE001"]
 "*/models.py" = ["E501"]
 "research_tools/*" = ["E501"]  # long regex / domain tables
@@ -18,3 +18,5 @@ ignore = ["S101", "B008"]
 "research/routes.py" = ["E501"]  # prompts and long message strings
 "reports/editing.py" = ["E501"]
 "reports/routes.py" = ["E501"]
+"reports/quality.py" = ["E501"]
+"reports/exports.py" = ["E501"]

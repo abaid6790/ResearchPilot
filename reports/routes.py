@@ -362,3 +362,88 @@ def text(public_id: str):
     _, report = _editor_context(public_id)
     return Response(to_plain_text(report, {}), mimetype="text/plain; charset=utf-8",
                     headers={"Cache-Control": "no-store", "X-Content-Type-Options": "nosniff"})  # fmt: skip
+
+
+# ============================================================================ quality and exports
+@bp.get("/<public_id>/report/quality")
+@verified_required
+def quality_page(public_id: str):
+    from reports import quality
+
+    project, report = _editor_context(public_id)
+    evaluation = quality.compute(report)
+    stored = quality.latest_rows(report, "deterministic")
+    opinions = quality.latest_rows(report, "llm")
+    dims = [s for s in evaluation.scores if s.dimension != "overall"]
+    overall = evaluation.get("overall")
+    return render_template(
+        "reports/quality.html", project=project, report=report, evaluation=evaluation, dims=dims, overall=overall,
+        labels=quality.LABELS, weights=quality.WEIGHTS, opinions=opinions, stale=bool(
+            stored and stored[0].revision_no != report.current_revision_no) or not stored,
+        has_run=bool(stored), busy=editing.run_is_active(report),
+    )  # fmt: skip
+
+
+@bp.post("/<public_id>/report/quality/run")
+@verified_required
+@limiter.limit("30 per hour")
+def quality_run(public_id: str):
+    from reports import quality
+
+    project, report = _editor_context(public_id)
+    if editing.run_is_active(report):
+        flash("The run that wrote this report is still active.", "warning")
+        return redirect(url_for("editor.quality_page", public_id=public_id))
+    _, evaluation = quality.persist(report)
+    db.session.commit()
+    flash(
+        "Checks re-run on the current text."
+        + ("" if evaluation.gates_passed else " Some quality gates failed."),
+        "success",
+    )
+    return redirect(url_for("editor.quality_page", public_id=public_id))
+
+
+@bp.post("/<public_id>/report/quality/assess")
+@verified_required
+@limiter.limit("10 per hour")
+def quality_assess(public_id: str):
+    from reports import quality
+
+    project, report = _editor_context(public_id)
+    try:
+        quality.assess_with_llm(report, current_user)
+        db.session.commit()
+    except EditError as exc:
+        db.session.rollback()
+        flash(exc.message, "error")
+        return redirect(url_for("editor.quality_page", public_id=public_id))
+    flash("AI assessment added. It is an opinion, not a fact check.", "success")
+    return redirect(url_for("editor.quality_page", public_id=public_id))
+
+
+@bp.get("/<public_id>/report/export/<fmt>")
+@verified_required
+@limiter.limit("60 per hour")
+def export_report(public_id: str, fmt: str):
+    from reports import exports
+
+    project, report = _editor_context(public_id)
+    if fmt not in exports.FORMATS:
+        abort(404)
+    content, content_type, ext = exports.export(report, fmt)
+    record_event(
+        "report_exported",
+        actor_user_id=current_user.id,
+        target_type="report",
+        target_id=report.public_id,
+        format=fmt,
+    )
+    db.session.commit()
+    headers = {
+        "Content-Disposition": f'attachment; filename="{exports.filename_for(report, ext)}"',
+        "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff",
+        # An exported HTML file opened from this origin must not run anything.
+        "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; sandbox",
+    }  # fmt: skip
+    return Response(content, mimetype=content_type.split(";")[0], headers=headers)

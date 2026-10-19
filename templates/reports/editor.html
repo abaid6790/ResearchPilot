@@ -15,6 +15,7 @@
     <div class="editor__tools">
       <button class="button button--ghost button--small" type="button" data-copy-report>Copy report text</button>
       <a class="button button--ghost button--small" href="{{ url_for('editor.sources', public_id=project.public_id) }}">Source explorer</a>
+      <a class="button button--ghost button--small" href="{{ url_for('editor.quality_page', public_id=project.public_id) }}">Quality and export</a>
       <span class="visually-hidden" role="status" data-copy-status></span>
     </div>
   </header>

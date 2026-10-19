@@ -103,6 +103,11 @@ def test_full_run_produces_cited_validated_report(app, alice, web):
     for sid in cited:  # every cited source appears in the references with its URL
         assert f"[@S{sid}]" in bodies["references"]
     assert "directly supported" in bodies["limitations"] and "Which region is meant?" in bodies["limitations"]
+    from reports.models import QualityEvaluation
+
+    rows = db.session.scalars(select(QualityEvaluation).where(QualityEvaluation.report_id == report.id)).all()
+    assert rows and {r.evaluator for r in rows} == {"deterministic"}
+    assert next(r for r in rows if r.dimension == "overall").passed_gate is True
     events = [e.event_type for e in job.events]
     assert events[0] == "job_queued" and events[-1] == "job_completed" and "plan_ready" in events
     assert [e.seq for e in job.events] == sorted(e.seq for e in job.events)

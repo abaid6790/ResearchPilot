@@ -13,4 +13,4 @@ Shows the sources of the project's latest run: title, address (http/https links 
 - Critique a section: advice only, nothing is stored or changed.
 - Citation checks run after each save: markers to sources outside this report, quotations of five or more words not found in the cited sources, long uncited paragraphs. They cannot prove a statement is true.
 - Copy report text: citation markers become [n] with a reference list.
-- After an edit the report is no longer "checked" until Phase 10 re-runs validation.
+- After an edit the report is no longer "checked" until you re-run the checks on the Quality page (see QUALITY_AND_EXPORTS.md).

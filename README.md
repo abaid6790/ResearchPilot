@@ -2,7 +2,7 @@
 
 A multi-agent research and report platform built with Flask, PostgreSQL and LangGraph.
 
-> **Build status: Phases 0-9 of 13 complete.** The foundation, the account system, the LLM
+> **Build status: Phases 0-10 of 13 complete.** The foundation, the account system, the LLM
 > provider layer (with key rotation and fallback), the research/report database schema and the
 > research tools (Tavily search, safe page fetching, document reading, uploads) work and are tested.
 > Research runs start from the project page, run in the background with live progress, and produce a read-only cited report. The report editor, source explorer, quality scoring and exports are **not built yet** (see [docs/PROGRESS.md](docs/PROGRESS.md)). Nothing in the UI pretends otherwise.
