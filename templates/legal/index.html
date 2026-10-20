@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Legal and policies - ResearchPilot AI{% endblock %}
+{% block head_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/legal/legal.css') }}">{% endblock %}
+{% block content %}
+<section class="legal">
+  <h1>Legal and policies</h1>
+  <p class="legal__lead">These documents describe what this software does with data. Items marked as operator placeholders must be completed by whoever runs this deployment, and the documents need legal review before real use.</p>
+  <ul class="legal__list">
+    {% for item in items %}
+    <li class="card">
+      <h2><a href="{{ url_for('legal.document', slug=item.slug) }}">{{ item.title }}</a></h2>
+      <p>{{ item.summary }}</p>
+      {% if item.open %}<p class="legal__open">{{ item.open }} operator placeholder{{ '' if item.open == 1 else 's' }} still to complete</p>{% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endblock %}

@@ -1,8 +1,8 @@
 # Agents and the research workflow (Phase 6)
 
 Code: `agents/`. The workflow is a LangGraph graph (`agents/graph.py`); `agents/runner.py` runs one
-job to the end. Phase 7 will call `run_job` from a background worker; today you can run a job
-yourself with `flask run-research <project id>`.
+job to the end. Background workers call it (see BACKGROUND_JOBS.md); you can also run a job
+yourself with `flask run-research <project id>`. The diagram of the whole run is in AGENT_WORKFLOW.md.
 
 ```
 plan -> research -> analyze --(evidence thin, rounds left)--> follow-up queries -> research

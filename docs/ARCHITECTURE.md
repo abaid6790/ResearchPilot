@@ -1,4 +1,4 @@
-# Architecture (Phases 0-4)
+# Architecture
 
 ## Layout
 
@@ -13,9 +13,10 @@ agents/           Planner, researcher, analyst, writer, critic, validator and th
 research_tools/    Tavily search, safe fetching (SSRF guard), HTML/PDF/DOCX/TXT extraction, untrusted-content helpers, scoring
 providers/        LLM layer: adapters (gemini, groq, openrouter), router, key_manager, models, structured
 research/         projects, jobs, tasks, sources, claims: models, settings schema, services, ownership loaders
-reports/          report documents, sections, revisions, quality evaluations
+reports/          report models, editing (optimistic locking, revisions), quality scoring, exports, source explorer routes
 dashboard/        landing + dashboard (verified users only)
-settings/         profile and password change
+settings/         profile, password, preferences, report defaults, data export, account deletion (+ CLI)
+legal/            public /legal pages rendering docs/legal/*.md
 templates/ static/ tests/ migrations/ scripts/ docs/
 ```
 
@@ -58,10 +59,25 @@ sequenceDiagram
 - **Logs** pass through a redaction filter (provider key formats, bearer tokens, token URLs,
   connection-string passwords, and the exact values of configured secrets).
 
-## Not yet built
+## System overview
 
-Research tools, agents/LangGraph workflow, research UI,
-exports, background jobs, quality scoring logic, legal documents, deployment guide.
+```mermaid
+flowchart LR
+    U[Browser: HTML, CSS, vanilla JS] --> F[Flask app]
+    F --> DB[(PostgreSQL)]
+    F -->|enqueue| J[Runner: thread / Celery / manual]
+    J --> AG[LangGraph agents]
+    AG --> LLM[LLM router: Gemini, Groq, OpenRouter]
+    AG --> T[Research tools: Tavily, safe fetcher, extractors]
+    AG --> DB
+    F --> M[SMTP]
+    F -. SSE or polling .-> U
+```
+
+Request path: routes (thin) -> services (rules) -> models. Long work never runs in a request: a run is
+a database row claimed by a runner, which writes progress events the browser reads over Server-Sent
+Events (with a polling fallback). See `BACKGROUND_JOBS.md`, `AGENT_WORKFLOW.md`, `EDITOR.md`,
+`QUALITY_AND_EXPORTS.md`, `ACCOUNT_DATA.md`, and `docs/legal/` for the policies.
 
 ## LLM provider layer (Phase 3)
 

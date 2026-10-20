@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} - ResearchPilot AI{% endblock %}
+{% block head_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/legal/legal.css') }}">{% endblock %}
+{% block content %}
+<section class="legal">
+  <nav class="legal__nav" aria-label="Legal documents">
+    <a href="{{ url_for('legal.index') }}">All documents</a>
+    {% for key, doc in documents.items() %}
+    <a href="{{ url_for('legal.document', slug=key) }}"{% if key == slug %} aria-current="page"{% endif %}>{{ doc[1] }}</a>
+    {% endfor %}
+  </nav>
+  {% if open_placeholders %}
+  <div class="alert alert--error" role="note"><p class="alert__text">This document is a template: {{ open_placeholders }} highlighted operator placeholder{{ '' if open_placeholders == 1 else 's' }} still need real values, and it has not had legal review.</p></div>
+  {% endif %}
+  <article class="legal__doc">{{ body }}</article>
+</section>
+{% endblock %}

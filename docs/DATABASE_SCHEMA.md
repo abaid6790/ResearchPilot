@@ -1,7 +1,8 @@
-# Database schema (Phases 2-4)
+# Database schema
 
 PostgreSQL is the target; tests also run on SQLite. Migrations: `migrations/versions/`
-(`60f85f1c5d8b` users and tokens, `5cc0c97d977e` research, reports, quality, usage, audit).
+(in order: `60f85f1c5d8b` users and tokens, `5cc0c97d977e` research, reports, quality, usage, audit,
+`a7f7526be75d` uploads, `4177381e95ce` job heartbeat, `a24955c09a06` user preferences and deletion request).
 Models: `auth/models.py`, `research/models.py`, `reports/models.py`, `providers/usage.py`,
 `core/audit.py`. Vocabularies (statuses, categories) live in `research/constants.py` and are
 enforced by CHECK constraints, not only by application code.
@@ -39,7 +40,7 @@ second user, by public and by internal ID.
 
 | Table | Purpose | Notable constraints |
 |---|---|---|
-| `users`, `auth_tokens` | Accounts, one-time email tokens | see DATABASE_SETUP.md |
+| `users`, `auth_tokens` | Accounts (email, password hash, display name, verification, `auth_version`, `theme_preference`, `notify_on_finish`, `default_settings`, `deletion_requested_at`), one-time email tokens (only a hash is stored) | unique email; see DATABASE_SETUP.md |
 | `research_projects` | The request: title, topic, objectives, `depth`, validated `settings` (JSON) | `depth` vocabulary; non-blank title; index `(user_id, created_at)` |
 | `research_uploads` | Text extracted from a user's PDF/DOCX/TXT (original file is never stored): filename (display only), kind, size, sha256, page count, text, warnings | unique `(project_id, sha256)`; cascades with the project |
 | `research_jobs` (has `heartbeat_at`: refreshed while a worker runs it) | One workflow run: status, stage, agent, rounds, `config_snapshot`, `checkpoint`, cancel flag, `awaiting_decision` + `unresolved_issues`, error info, `event_seq` | status vocabulary (queued ... cancelled); **partial unique index: one active job per project**; rounds >= 0 |
@@ -76,7 +77,7 @@ Two deliberate design points:
 | A report section | Its revisions stay (`section_id` NULL, `section_key` kept) so history is not lost |
 
 This describes the database. Backups, log files and exports made earlier are outside these
-rules; the retention policy and the account-deletion flow (Phase 11/12) must say so honestly.
+rules; `docs/legal/DATA_RETENTION_POLICY.md` and `ACCOUNT_DATA.md` say so.
 Whether keeping anonymised usage and audit rows is acceptable depends on the operator's
 jurisdiction and needs legal review.
 
@@ -91,7 +92,6 @@ jurisdiction and needs legal review.
 * Provider usage rows are written on their own connection, so a request that later rolls back
   still keeps the record of the API call it spent.
 
-## Not yet in the schema
-
-User preferences (theme, default report settings, notification choices), account-deletion and
-data-export requests, and uploaded-document storage arrive in the phases that use them (5 and 11).
+## Not stored
+Original uploaded files (only extracted text), prompts and model responses in usage records, passwords
+(only a hash), API keys, and generated export files. The data export is built in memory on request.

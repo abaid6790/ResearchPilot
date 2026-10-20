@@ -1,7 +1,7 @@
 # Installation
 
-Requires **Python 3.11 or newer** and **PostgreSQL 14 or newer**. Redis is only needed from
-Phase 7 (background jobs) onward.
+Requires **Python 3.11 or newer** and **PostgreSQL 14 or newer**. Redis is only needed for
+Celery background jobs and shared rate limits in production.
 
 > Verified on Linux (Python 3.13, PostgreSQL 16). The Windows commands below use standard
 > PowerShell and the official installers but were not executed in the build environment.
@@ -101,7 +101,7 @@ email or call external APIs: SMTP tests use a throwaway local server.
 
 ## 6. Production
 
-`gunicorn wsgi:app -b 127.0.0.1:8000 --workers 3` behind a reverse proxy that terminates HTTPS.
+`gunicorn wsgi:app -b 127.0.0.1:8000 --worker-class gthread --workers 2 --threads 8` behind a reverse proxy that terminates HTTPS.
 Set `FLASK_ENV=production`, an `https://` `APP_BASE_URL`, `TRUSTED_PROXY_COUNT`, and a Redis
 `RATELIMIT_STORAGE_URI`. The app refuses to start in production without these. Gunicorn does not
-run on native Windows; use WSL2 or a Linux host. A full deployment guide comes in a later phase.
+run on native Windows; use WSL2 or a Linux host. See [DEPLOYMENT.md](DEPLOYMENT.md) for the full guide (Gunicorn with threads is required for live progress).

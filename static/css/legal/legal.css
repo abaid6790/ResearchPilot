@@ -1,0 +1,16 @@
+/* Legal pages */
+.legal { max-width: 52rem; margin: 0 auto; }
+.legal__lead { color: var(--ink-soft); }
+.legal__list { list-style: none; padding: 0; display: grid; gap: var(--space-4); }
+.legal__list h2 { margin: 0 0 var(--space-2); font-size: 1.15rem; }
+.legal__open { color: var(--danger); font-size: 0.9rem; }
+.legal__nav { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); margin-bottom: var(--space-5); font-size: 0.9rem; }
+.legal__nav a[aria-current="page"] { font-weight: 600; color: var(--ink); text-decoration: none; }
+.legal__doc { overflow-wrap: anywhere; line-height: 1.65; }
+.legal__doc h1 { margin-top: 0; }
+.legal__doc h2 { margin-top: var(--space-6); }
+.legal__doc table { display: block; max-width: 100%; overflow-x: auto; border-collapse: collapse; }
+.legal__doc th, .legal__doc td { border: 1px solid var(--line); padding: 0.4rem 0.6rem; text-align: left; vertical-align: top; }
+.legal__doc th { background: var(--surface-2); }
+.legal__doc code { overflow-wrap: anywhere; }
+.placeholder { background: rgba(255, 190, 0, 0.28); color: inherit; padding: 0 0.2em; border-radius: 3px; }

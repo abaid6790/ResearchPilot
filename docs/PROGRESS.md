@@ -1,36 +1,25 @@
-# Progress
+# Build progress
 
 | Phase | Scope | Status |
 |---|---|---|
-| 0 | Environment, skeleton, requirements, `.env.example`, `scripts/check_env.py` | Done |
-| 1 | Flask foundation: config, extensions, factory, templates, errors, health, security headers | Done |
-| 2 | Authentication: register, verify email, login, reset, change password, rate limits | Done |
-| 3 | LLM provider layer: Gemini/Groq/OpenRouter adapters, key rotation, fallback | Done (not run against live providers) |
-| 4 | Remaining database models | Done |
-| 4b | Research workspace UI: new-research form, project list, project page, archive, delete, real dashboard counts | Done |
-| 5 | Research tools (Tavily, safe page fetching, extraction, PDF/DOCX/TXT reader, uploads) | Done (not run against live Tavily or real websites) |
-| 6 | Agents and LangGraph workflow | Done (tested with scripted models, not real ones) |
-| 7 | Background jobs (thread or Celery/Redis), start/stop/resume, live progress, report page | Done (not run with real providers) |
-| 8 | App shell (sidebar, mobile drawer), saved reports, history, dashboard activity and usage, richer run panel | Done |
-| 9 | Source explorer, report editor (save, autosave, history, compare, restore, rewrite suggestions, critique, copy) | Done (not run with real providers) |
-| 10 | Quality scoring (deterministic + separate AI opinion), quality gates, re-check after edits, exports (PDF, Word, Markdown, HTML) | Done (not run with real providers) |
-| 11 | Settings and privacy: preferences, report defaults, finish emails, data export, account deletion | Done |
-| 8 | Core research UI | Planned |
-| 9 | Source explorer, report editor (save, autosave, history, compare, restore, rewrite suggestions, critique, copy) | Done (not run with real providers) |
-| 10 | Quality scoring (deterministic + separate AI opinion), quality gates, re-check after edits, exports (PDF, Word, Markdown, HTML) | Done (not run with real providers) |
-| 11 | Settings and privacy: preferences, report defaults, finish emails, data export, account deletion | Done |
-| 9 | Source explorer and report editor | Planned |
-| 10 | Quality scoring (deterministic + separate AI opinion), quality gates, re-check after edits, exports (PDF, Word, Markdown, HTML) | Done (not run with real providers) |
-| 11 | Settings and privacy: preferences, report defaults, finish emails, data export, account deletion | Done |
-| 10 | Quality scoring and exports | Planned |
-| 11 | Settings and privacy: preferences, report defaults, finish emails, data export, account deletion | Done |
-| 11 | Settings, privacy, polish | Planned |
-| 12 | Documentation and legal drafts | Planned |
+| 0 | Environment and tooling | Done |
+| 1 | Flask foundation | Done |
+| 2 | Authentication | Done |
+| 3 | LLM provider layer | Done |
+| 4 | Database models | Done |
+| 5 | Research tools | Done |
+| 6 | Agents and LangGraph workflow | Done |
+| 7 | Background jobs and live progress | Done |
+| 8 | App shell, saved reports, history, dashboard | Done |
+| 9 | Source explorer and report editor | Done |
+| 10 | Quality scoring and exports | Done |
+| 11 | Settings and privacy | Done |
+| 12 | Legal pages and documentation | Done (legal text is a template needing operator input and legal review) |
 | 13 | Hardening and final verification | Planned |
 
 ## Verified in the build environment
 
-- 227 tests pass on PostgreSQL 16 and on SQLite; `ruff check` clean (94 cover the provider layer, 45 the data model, 28 the research pages)
+- 502 tests pass on PostgreSQL 16; 501 pass and 1 is skipped on SQLite (a concurrency test that only applies to PostgreSQL); `ruff check` clean
 - Migrations applied from an empty database (base to head), downgraded and re-applied, and checked for drift against the models on PostgreSQL
 - Live run: Gunicorn + real SMTP delivery + real browser session (register, confirm, sign in,
   edit profile, sign out); no server errors, no secrets in logs

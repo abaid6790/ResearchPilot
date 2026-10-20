@@ -1,4 +1,45 @@
-# Security of retrieved and uploaded content
+# Security
+
+This page starts with the application-level controls, then covers retrieved and uploaded content.
+To report a vulnerability see `docs/legal/SECURITY_DISCLOSURE.md`.
+
+## Application controls
+
+| Area | What the code does |
+|---|---|
+| Passwords | Werkzeug salted hashes; length limits; equal-time check for unknown users; password change invalidates other sessions (`auth_version`) |
+| Email tokens | 256-bit random, only the SHA-256 digest stored, single use, expiring, confirmation page before consuming |
+| Sessions | Cookie `rp_session`: HttpOnly, SameSite=Lax, Secure in production, `SESSION_LIFETIME_HOURS` |
+| CSRF | Required on every state-changing request; logout is POST-only |
+| Headers | Content-Security-Policy (`default-src 'self'`, no inline script or style), `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`, restrictive `Permissions-Policy`, `Cross-Origin-Opener-Policy: same-origin`, HSTS in production; HTML responses are `no-store` |
+| Rate limits | Per client IP on authentication, creation, runs, edits, exports (see `API_DOCUMENTATION.md`); Redis storage required in production |
+| Authorisation | Every project resource is loaded through `research/access.py`; foreign ids return 404 |
+| Output | Markdown rendered with `bleach` allow-lists; exports sanitised; citation markers and URLs checked before use |
+| Secrets | Read from the environment only; startup refuses weak or missing production secrets; logs pass a redaction filter; keys are never sent to the browser |
+| Audit | Events record type, time, target and small details, never passwords, tokens, emails or report text |
+| Privacy | Provider usage records hold no prompt text; data export and account deletion are in `ACCOUNT_DATA.md` |
+
+## Threat model (summary)
+* **Malicious web page or upload** (prompt injection, SSRF, parser exploits): see below.
+* **Account takeover:** rate limits, hashed single-use tokens, session invalidation; no multi-factor
+  authentication exists.
+* **Cross-site attacks:** CSRF tokens, strict CSP, output sanitising.
+* **Data exposure to providers:** research text is sent to the configured LLM and search providers by
+  design; enable only providers whose terms you accept.
+* **Resource abuse:** limits on active runs, per-run budgets, upload and fetch size limits.
+
+## Operating securely
+Serve over HTTPS; set `TRUSTED_PROXY_COUNT` correctly; keep the environment file at mode 600; rotate
+keys (`API_KEY_ROTATION.md`); keep dependencies updated and review advisories for PyMuPDF,
+python-docx, ReportLab, Werkzeug and Flask; back up and encrypt backups; schedule `purge-accounts`.
+
+## Incident response
+If a key leaks: revoke it at the provider, replace it, restart, and check usage records. If a
+database or server is compromised: rotate `SECRET_KEY` (signs everyone out) and all keys, force
+password resets as needed, and check whether notification duties apply where you operate (legal
+review). Not provided: intrusion detection, alerting or a formal vulnerability programme.
+
+## Retrieved and uploaded content
 
 Web pages, uploaded files and model output are all **untrusted**. This is what the code does
 about it (`research_tools/`), and what it does not.

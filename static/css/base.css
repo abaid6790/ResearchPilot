@@ -201,3 +201,4 @@ strong { font-weight: 600; }
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }
+.site-footer__links { margin-top: var(--space-2); }
