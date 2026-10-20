@@ -35,6 +35,7 @@ reset emails, and says so honestly when you ask for one.
 | `EMAIL_VERIFY_TTL_HOURS` | `24` |
 | `PASSWORD_RESET_TTL_MINUTES` | `60` |
 | `SESSION_LIFETIME_HOURS` | `12` |
+| `ACCOUNT_DELETION_GRACE_DAYS` | `7` (days between a deletion request and removal by `flask purge-accounts`) |
 | `MAX_CONTENT_LENGTH_MB` | `16` |
 
 ## Deployment

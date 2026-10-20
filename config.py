@@ -68,6 +68,9 @@ class BaseConfig:
     # CSRF (Flask-WTF)
     WTF_CSRF_TIME_LIMIT = 60 * 60 * _env_int("SESSION_LIFETIME_HOURS", 12)
 
+    # Account deletion: days between the request and the removal (the user can cancel meanwhile)
+    ACCOUNT_DELETION_GRACE_DAYS = _env_int("ACCOUNT_DELETION_GRACE_DAYS", 7)
+
     # Request limits
     MAX_CONTENT_LENGTH = _env_int("MAX_CONTENT_LENGTH_MB", 16) * 1024 * 1024
 

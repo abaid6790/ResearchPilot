@@ -49,6 +49,7 @@ def run_by_public_id(app, public_id: str) -> bool:
     """Entry point shared by every runner. Returns True if this call ran the job."""
     from agents.runner import default_context, run_job
 
+    ran = False
     with app.app_context():
         try:
             job = db.session.scalar(select(ResearchJob).where(ResearchJob.public_id == public_id))
@@ -58,12 +59,16 @@ def run_by_public_id(app, public_id: str) -> bool:
                 logger.info("Job %s is already being run by another worker", public_id)
                 return False
             run_job(default_context(app, job.id))
-            return True
+            ran = True
         except Exception:  # noqa: BLE001 - run_job handles its own errors; this is the last line
             logger.exception("Background job %s failed outside the workflow", public_id)
-            return False
         finally:
             db.session.remove()
+    if ran:
+        from settings.services import notify_job_finished
+
+        notify_job_finished(app, public_id)  # only emails users who opted in; never raises
+    return ran
 
 
 def enqueue(app, job: ResearchJob) -> str:

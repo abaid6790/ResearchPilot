@@ -1,0 +1,5 @@
+<nav class="settings__tabs" aria-label="Settings sections">
+  {% for key, label, endpoint in [("profile", "Profile and password", "settings.profile"), ("preferences", "Preferences", "settings.preferences"), ("defaults", "Report defaults", "settings.defaults"), ("privacy", "Privacy and data", "settings.privacy")] %}
+  <a href="{{ url_for(endpoint) }}" {% if tab == key %}aria-current="page"{% endif %}>{{ label }}</a>
+  {% endfor %}
+</nav>

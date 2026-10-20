@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% from "components/forms.html" import field, password_field %}
+{% block title %}Privacy and data - ResearchPilot AI{% endblock %}
+{% block head_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/settings/settings.css') }}">{% endblock %}
+{% block content %}
+<section class="settings">
+  <header class="settings__header"><p class="eyebrow">Account</p><h1>Account settings</h1></header>
+  {% include "settings/_nav.html" %}
+  <div class="settings__stack">
+    <section class="card" aria-labelledby="hist-title">
+      <h2 id="hist-title" class="card__title">Your research</h2>
+      <p>Your <a href="{{ url_for('research.history') }}">history</a> lists every run, and each project page has a delete button that removes that project with its runs, sources, claims and reports. Deleting a project is permanent in the application; copies in operator backups follow the operator's backup schedule.</p>
+    </section>
+
+    <section class="card" aria-labelledby="export-title">
+      <h2 id="export-title" class="card__title">Download your data</h2>
+      <p>You get one ZIP file with your account details and preferences, projects (including text taken from documents you uploaded), runs, sources, excerpts, claims, reports with their history and quality results, provider usage counts and the audit events that name you. Your password hash and session data are never included. Limited to 5 downloads per day.</p>
+      <form method="post" action="{{ url_for('settings.export_data') }}" data-single-submit>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="button button--primary" type="submit">Download my data</button>
+      </form>
+    </section>
+
+    <section class="card card--danger" aria-labelledby="del-title">
+      <h2 id="del-title" class="card__title">Delete your account</h2>
+      {% if delete_on %}
+        <p class="alert alert--error" role="status">Deletion is scheduled for <strong>{{ delete_on.strftime("%d %B %Y, %H:%M") }} UTC</strong>. Running research was stopped and you cannot start new runs. Until then you can cancel.</p>
+        <form method="post" action="{{ url_for('settings.cancel_deletion') }}" data-single-submit>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="button button--primary" type="submit">Cancel deletion</button>
+        </form>
+      {% else %}
+        <p>Deleting your account removes your profile, projects, uploaded document text, runs, sources, claims, reports and revisions. It starts a {{ grace_days }}-day waiting period during which you can cancel; running research is stopped right away. Afterwards:</p>
+        <ul>
+          <li>Provider usage records (counts, models, timings; no request text) are kept for cost accounting but are no longer linked to you.</li>
+          <li>Audit events are kept without a link to you; they hold no email address.</li>
+          <li>Backups and server logs held by the operator are not changed immediately. See the data retention document for the operator's schedule.</li>
+        </ul>
+        <form method="post" action="{{ url_for('settings.delete_account') }}" novalidate data-single-submit>
+          {{ delete_form.hidden_tag() }}
+          {{ password_field(delete_form.password, autocomplete="current-password") }}
+          {{ field(delete_form.confirm, hint="Type: " ~ phrase) }}
+          {{ delete_form.submit(id="delete-submit", class_="button button--danger") }}
+        </form>
+      {% endif %}
+    </section>
+  </div>
+</section>
+{% endblock %}

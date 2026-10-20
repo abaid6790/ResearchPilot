@@ -119,8 +119,10 @@ def _register_blueprints(app: Flask) -> None:
     from reports.routes import bp as editor_bp
     from research import models as research_models  # noqa: F401
     from research.routes import bp as research_bp
+    from settings.cli import register_cli as register_settings_cli
     from settings.routes import bp as settings_bp
 
+    register_settings_cli(app)
     for blueprint in (health_bp, auth_bp, dashboard_bp, research_bp, editor_bp, settings_bp):
         app.register_blueprint(blueprint)
 

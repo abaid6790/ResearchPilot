@@ -56,14 +56,9 @@ def _lines(text: str | None) -> list[str]:
     return [line.strip() for line in (text or "").replace(",", "\n").splitlines() if line.strip()]
 
 
-class NewResearchForm(FlaskForm):
-    title = StringField("Title", validators=[DataRequired(), Length(max=200)])
-    topic = TextAreaField(
-        "Research topic or question", validators=[DataRequired(), Length(min=10, max=TOPIC_MAX)]
-    )
-    objectives = TextAreaField(
-        "Detailed objectives (optional)", validators=[Optional(), Length(max=OBJECTIVES_MAX)]
-    )
+class SettingsFields(FlaskForm):
+    """The report settings shared by the new-research form and the account defaults form."""
+
     depth = SelectField("Research depth", choices=[(d, DEPTH_LABELS[d]) for d in DEPTHS], default="standard")
     output_length = SelectField("Output length", choices=LENGTH_CHOICES, default="medium")
     audience = StringField("Target audience", validators=[Optional(), Length(max=100)], default="general")
@@ -83,28 +78,6 @@ class NewResearchForm(FlaskForm):
     citation_style = SelectField("Citation style", choices=CITATION_CHOICES, default="numeric")
     enable_critic = BooleanField("Independent critic review", default=True)
     enable_additional_research = BooleanField("Search again when evidence is thin", default=True)
-    documents = MultipleFileField("Your own documents (optional)")
-    submit = SubmitField("Save research project")
-
-    parsed_documents: list[ParsedDocument]
-
-    def validate_documents(self, field) -> None:
-        """Read every attached file now (in memory); nothing is stored on disk."""
-        self.parsed_documents = []
-        files = [f for f in (field.data or []) if getattr(f, "filename", "")]
-        if len(files) > MAX_UPLOADS:
-            raise ValidationError(f"Attach at most {MAX_UPLOADS} documents.")
-        seen: set[str] = set()
-        for storage in files:
-            data = storage.stream.read(MAX_UPLOAD_BYTES + 1)
-            try:
-                parsed = parse_document(storage.filename, data, max_bytes=MAX_UPLOAD_BYTES)
-            except DocumentError as exc:
-                raise ValidationError(f"{storage.filename[:80]}: {exc}") from exc
-            if parsed.sha256 in seen:
-                continue
-            seen.add(parsed.sha256)
-            self.parsed_documents.append(parsed)
 
     def build_settings(self) -> ResearchSettings | None:
         """Validate the settings fields through ``ResearchSettings``; attach errors to the fields."""
@@ -157,3 +130,35 @@ def limits_for_template() -> dict:
         "topic_max": TOPIC_MAX,
         "objectives_max": OBJECTIVES_MAX,
     }
+
+
+class NewResearchForm(SettingsFields):
+    title = StringField("Title", validators=[DataRequired(), Length(max=200)])
+    topic = TextAreaField(
+        "Research topic or question", validators=[DataRequired(), Length(min=10, max=TOPIC_MAX)]
+    )
+    objectives = TextAreaField(
+        "Detailed objectives (optional)", validators=[Optional(), Length(max=OBJECTIVES_MAX)]
+    )
+    documents = MultipleFileField("Your own documents (optional)")
+    submit = SubmitField("Save research project")
+
+    parsed_documents: list[ParsedDocument]
+
+    def validate_documents(self, field) -> None:
+        """Read every attached file now (in memory); nothing is stored on disk."""
+        self.parsed_documents = []
+        files = [f for f in (field.data or []) if getattr(f, "filename", "")]
+        if len(files) > MAX_UPLOADS:
+            raise ValidationError(f"Attach at most {MAX_UPLOADS} documents.")
+        seen: set[str] = set()
+        for storage in files:
+            data = storage.stream.read(MAX_UPLOAD_BYTES + 1)
+            try:
+                parsed = parse_document(storage.filename, data, max_bytes=MAX_UPLOAD_BYTES)
+            except DocumentError as exc:
+                raise ValidationError(f"{storage.filename[:80]}: {exc}") from exc
+            if parsed.sha256 in seen:
+                continue
+            seen.add(parsed.sha256)
+            self.parsed_documents.append(parsed)

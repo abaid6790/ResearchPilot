@@ -95,7 +95,19 @@ def _latest_job_status(projects) -> dict[int, str]:
 @verified_required
 @limiter.limit("30 per hour", methods=["POST"])
 def new():
-    form = NewResearchForm()
+    if request.method == "POST" and current_user.deletion_pending:
+        flash(
+            "Your account is scheduled for deletion, so new projects cannot be created. Cancel the deletion in settings first.",
+            "warning",
+        )
+        return redirect(url_for("settings.privacy"))
+    from settings.routes import defaults_to_form_data
+
+    form = (
+        NewResearchForm(data=defaults_to_form_data(current_user.default_settings))
+        if request.method == "GET"
+        else NewResearchForm()
+    )
     if form.validate_on_submit():
         settings = form.build_settings()
         project = create_project(
@@ -214,6 +226,12 @@ def start(public_id: str):
     from jobs import enqueue
     from research.services import ActiveJobExistsError, create_job
 
+    if current_user.deletion_pending:
+        flash(
+            "Your account is scheduled for deletion, so runs cannot be started. Cancel the deletion in settings first.",
+            "warning",
+        )
+        return redirect(url_for("research.detail", public_id=public_id))
     project = owned_project(current_user, public_id)
     if project.archived_at is not None:
         flash("Restore the project before starting a run.", "error")
@@ -264,6 +282,12 @@ def resume(public_id: str, job_id: str):
     from jobs import enqueue
     from research.services import ActiveJobExistsError, resume_job
 
+    if current_user.deletion_pending:
+        flash(
+            "Your account is scheduled for deletion, so runs cannot be started. Cancel the deletion in settings first.",
+            "warning",
+        )
+        return redirect(url_for("research.detail", public_id=public_id))
     project = owned_project(current_user, public_id)
     job = _project_job(project, job_id)
     problems = _runner_problems(project)

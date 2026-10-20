@@ -5,10 +5,11 @@ from __future__ import annotations
 from datetime import datetime
 
 from flask_login import UserMixin
-from sqlalchemy import Boolean, CheckConstraint, DateTime, ForeignKey, Integer, String
+from sqlalchemy import Boolean, CheckConstraint, DateTime, ForeignKey, Integer, String, false
 from sqlalchemy.orm import Mapped, mapped_column
 from werkzeug.security import check_password_hash, generate_password_hash
 
+from core.db_types import JSONType
 from core.db_utils import TimestampMixin, utcnow
 from extensions import db
 
@@ -18,7 +19,10 @@ PURPOSE_RESET_PASSWORD = "reset_password"  # noqa: S105 - a label, not a credent
 
 class User(UserMixin, TimestampMixin, db.Model):
     __tablename__ = "users"
-    __table_args__ = (CheckConstraint("email = lower(email)", name="email_lowercase"),)
+    __table_args__ = (
+        CheckConstraint("email = lower(email)", name="email_lowercase"),
+        CheckConstraint("theme_preference in ('system', 'light', 'dark')", name="theme_valid"),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     email: Mapped[str] = mapped_column(String(320), unique=True, index=True, nullable=False)
@@ -29,6 +33,16 @@ class User(UserMixin, TimestampMixin, db.Model):
     # Bumped on password change/reset; sessions carrying an older value are rejected.
     auth_version: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
     last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # Preferences (Phase 11)
+    theme_preference: Mapped[str] = mapped_column(
+        String(8), default="system", server_default="system", nullable=False
+    )
+    notify_on_finish: Mapped[bool] = mapped_column(
+        Boolean, default=False, server_default=false(), nullable=False
+    )
+    default_settings: Mapped[dict | None] = mapped_column(JSONType)  # prefill for the new-research form
+    # Set when the user asks to delete the account; the account is removed after a grace period.
+    deletion_requested_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     # -- Flask-Login integration -------------------------------------------
     @property
@@ -39,6 +53,10 @@ class User(UserMixin, TimestampMixin, db.Model):
         return f"{self.id}:{self.auth_version}"
 
     # -- Helpers -----------------------------------------------------------
+    @property
+    def deletion_pending(self) -> bool:
+        return self.deletion_requested_at is not None
+
     @property
     def is_verified(self) -> bool:
         return self.email_verified_at is not None

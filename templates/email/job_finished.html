@@ -1,0 +1,7 @@
+{% extends "email/_layout.html" %}
+{% block body %}
+<p>Hi {{ display_name }},</p>
+<p>Your research run &ldquo;{{ title }}&rdquo; has finished with the status: <strong>{{ status }}</strong>.</p>
+<p><a href="{{ link }}" style="color:#12324a;">Open the project</a></p>
+<p style="color:#666;font-size:13px;">You are receiving this because you turned on finish notifications in your account settings. You can turn them off there at any time.</p>
+{% endblock %}

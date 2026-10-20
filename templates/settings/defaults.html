@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% from "components/forms.html" import field %}
+{% block title %}Report defaults - ResearchPilot AI{% endblock %}
+{% block head_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/research/new.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/settings/settings.css') }}">{% endblock %}
+{% macro choice(f) %}
+  <div class="field{% if f.errors %} field--invalid{% endif %}">{{ f.label(class_="field__label") }}{{ f(class_="field__input") }}
+    {% if f.errors %}<ul class="field__errors">{% for e in f.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}</div>
+{% endmacro %}
+{% block content %}
+<section class="settings">
+  <header class="settings__header"><p class="eyebrow">Account</p><h1>Account settings</h1></header>
+  {% include "settings/_nav.html" %}
+  <p class="muted">These values are filled in when you start a new research project. You can still change them for each project. Settings marked <span class="cost-tag">uses more time and API quota</span> make runs slower and costlier.</p>
+  {% if form.form_errors %}<div class="alert alert--error" role="alert"><p class="alert__text">{{ form.form_errors|join(" ") }}</p></div>{% endif %}
+  <form method="post" action="{{ url_for('settings.defaults') }}" class="research-form" novalidate data-single-submit>
+    {{ form.hidden_tag() }}
+    <section class="card form-section">
+      <h2 class="card__title">Depth and size <span class="cost-tag">uses more time and API quota</span></h2>
+      {{ choice(form.depth) }}
+      <div class="grid-3">
+        {{ field(form.max_sources, type="number", hint="Empty = depth default.") }}
+        {{ field(form.max_research_rounds, type="number") }}
+        {{ field(form.max_revision_rounds, type="number") }}
+      </div>
+      <div class="grid-2">{{ choice(form.output_length) }}{{ choice(form.output_format) }}</div>
+      <div class="checks">
+        <label class="check">{{ form.enable_critic() }} <span>{{ form.enable_critic.label.text }} <small><span class="cost-tag">extra model calls</span></small></span></label>
+        <label class="check">{{ form.enable_additional_research() }} <span>{{ form.enable_additional_research.label.text }} <small><span class="cost-tag">extra searches</span></small></span></label>
+      </div>
+    </section>
+    <section class="card form-section">
+      <h2 class="card__title">Audience and style</h2>
+      <div class="grid-2">{{ field(form.audience) }}{{ field(form.writing_style) }}</div>
+      <div class="grid-2">{{ choice(form.language) }}{{ choice(form.citation_style) }}</div>
+    </section>
+    <section class="card form-section">
+      <h2 class="card__title">Sources</h2>
+      <fieldset class="field"><legend class="field__label">{{ form.source_categories.label.text }}</legend>
+        {{ form.source_categories(class_="check-grid") }}</fieldset>
+      <div class="grid-2">{{ field(form.prioritize_domains) }}{{ field(form.exclude_domains) }}</div>
+    </section>
+    <div class="form-actions">{{ form.submit(id="defaults-submit", class_="button button--primary") }}</div>
+  </form>
+  {% if has_defaults %}
+  <form method="post" action="{{ url_for('settings.reset_defaults') }}" data-single-submit>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button class="button button--ghost" type="submit">Clear my defaults</button>
+  </form>
+  {% endif %}
+</section>
+{% endblock %}

@@ -22,7 +22,8 @@ EVENT_TYPES = frozenset({
     "user_registered", "email_verified", "login_succeeded", "password_changed", "password_reset",
     "project_created", "project_deleted", "job_started", "job_cancelled", "job_finished",
     "report_edited", "report_restored", "report_exported",
-    "account_deletion_requested", "data_export_requested",
+    "account_deletion_requested", "account_deletion_cancelled", "account_deleted", "data_export_requested",
+    "preferences_changed",
 })  # fmt: skip
 
 _FORBIDDEN_KEYS = ("password", "token", "secret", "api_key", "email", "authorization", "cookie")

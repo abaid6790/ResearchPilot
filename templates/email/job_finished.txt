@@ -1,0 +1,8 @@
+Hi {{ display_name }},
+
+Your research run "{{ title }}" has finished with the status: {{ status }}.
+
+Open it here:
+{{ link }}
+
+You are receiving this because you turned on finish notifications in your account settings. You can turn them off there at any time.

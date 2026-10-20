@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en"{% if current_user.is_authenticated and current_user.theme_preference in ("light", "dark") %} data-theme="{{ current_user.theme_preference }}"{% endif %}>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -20,6 +20,9 @@
     {% if show_sidebar %}{% include "components/sidebar.html" %}{% endif %}
     <div class="shell__main">
       <main id="main" class="{% block main_class %}page{% endblock %}">
+        {% if current_user.is_authenticated and current_user.deletion_pending %}
+        <div class="alert alert--error" role="status"><p class="alert__text">Your account is scheduled for deletion. <a href="{{ url_for('settings.privacy') }}">Review or cancel</a>.</p></div>
+        {% endif %}
         {% include "components/flash_messages.html" %}
         {% block content %}{% endblock %}
       </main>

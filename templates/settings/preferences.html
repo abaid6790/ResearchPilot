@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Preferences - ResearchPilot AI{% endblock %}
+{% block head_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/settings/settings.css') }}">{% endblock %}
+{% block content %}
+<section class="settings">
+  <header class="settings__header"><p class="eyebrow">Account</p><h1>Account settings</h1></header>
+  {% include "settings/_nav.html" %}
+  <form method="post" action="{{ url_for('settings.preferences') }}" class="card settings__form" novalidate data-single-submit data-clear-theme>
+    {{ form.hidden_tag() }}
+    <h2 class="card__title">Appearance</h2>
+    <div class="field">
+      {{ form.theme_preference.label(class_="field__label") }}
+      {{ form.theme_preference(class_="field__input") }}
+      <p class="field__hint">Used on every device you sign in on. The sun/moon button in the top bar changes it only for this browser until you save here.</p>
+    </div>
+    <h2 class="card__title">Email notifications</h2>
+    <label class="check">{{ form.notify_on_finish() }} <span>{{ form.notify_on_finish.label.text }}
+      <small>One email per finished run with its status and a link. It never contains report text. Off by default. Account emails (verification, password reset) are always sent when needed.</small></span></label>
+    {{ form.submit(id="prefs-submit", class_="button button--primary") }}
+  </form>
+</section>
+{% endblock %}

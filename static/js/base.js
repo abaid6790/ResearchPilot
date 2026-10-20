@@ -16,6 +16,13 @@
     });
   });
 
+  // Saving the theme in settings makes the saved choice win over this browser's earlier toggle.
+  document.querySelectorAll("form[data-clear-theme]").forEach(function (form) {
+    form.addEventListener("submit", function () {
+      try { localStorage.removeItem("rp-theme"); } catch (e) { /* ignore */ }
+    });
+  });
+
   // User menu
   var menuButton = document.querySelector("[data-menu-toggle]");
   if (menuButton) {
