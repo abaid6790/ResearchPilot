@@ -102,3 +102,48 @@ def test_docs_do_not_contain_real_looking_keys():
     )
     for path in list(DOCS.rglob("*.md")) + [ROOT / "README.md", ROOT / ".env.example"]:
         assert not pattern.search(path.read_text(encoding="utf-8")), path
+
+
+# ---------------------------------------------------------------- Phase 13: repository consistency
+def test_templates_and_scripts_have_no_inline_code():
+    pattern = re.compile(r"<script(?![^>]*\bsrc=)|\son[a-z]+=\"|javascript:", re.I)
+    for path in (ROOT / "templates").rglob("*.html"):
+        if "email" in path.parts:  # HTML email needs inline styles; it is never served as a page
+            continue
+        text = path.read_text(encoding="utf-8")
+        assert not pattern.search(text), path
+        assert " style=" not in text, path
+    for path in (ROOT / "static" / "js").rglob("*.js"):
+        text = path.read_text(encoding="utf-8")
+        assert "eval(" not in text and "document.write" not in text, path
+
+
+def test_every_referenced_static_asset_exists():
+    ref = re.compile(r"filename=['\"]([^'\"]+)['\"]")
+    for path in (ROOT / "templates").rglob("*.html"):
+        for name in ref.findall(path.read_text(encoding="utf-8")):
+            assert (ROOT / "static" / name).is_file(), f"{path}: missing static/{name}"
+
+
+def test_markdown_links_between_documents_resolve():
+    link = re.compile(r"\]\((?!https?:|mailto:|#)([^)#\s]+)")
+    for path in list(DOCS.rglob("*.md")) + [ROOT / "README.md"]:
+        for target in link.findall(path.read_text(encoding="utf-8")):
+            assert (path.parent / target).exists(), f"{path}: broken link {target}"
+
+
+def test_env_example_has_no_real_secrets_and_lists_provider_keys():
+    text = (ROOT / ".env.example").read_text(encoding="utf-8")
+    for name in (
+        "GEMINI_API_KEY_1",
+        "GEMINI_API_KEY_4",
+        "GROQ_API_KEY_1",
+        "OPENROUTER_API_KEY_1",
+        "TAVILY_API_KEY",
+    ):
+        assert re.search(rf"^#?\s*{name}=\s*$", text, re.M), name
+
+
+def test_live_suite_is_opt_in():
+    text = (ROOT / "tests" / "live" / "test_live_services.py").read_text(encoding="utf-8")
+    assert "RUN_LIVE_TESTS" in text and "pytest.mark.live" in text

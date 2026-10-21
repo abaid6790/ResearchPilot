@@ -15,11 +15,11 @@
 | 10 | Quality scoring and exports | Done |
 | 11 | Settings and privacy | Done |
 | 12 | Legal pages and documentation | Done (legal text is a template needing operator input and legal review) |
-| 13 | Hardening and final verification | Planned |
+| 13 | Hardening and final verification | Done (see FINAL_VERIFICATION.md) |
 
 ## Verified in the build environment
 
-- 502 tests pass on PostgreSQL 16; 501 pass and 1 is skipped on SQLite (a concurrency test that only applies to PostgreSQL); `ruff check` clean
+- 507 tests pass on PostgreSQL 16 (7 opt-in live tests skipped); 506 pass on SQLite (8 skipped: the 7 live tests and one PostgreSQL-only concurrency test); `ruff check` clean
 - Migrations applied from an empty database (base to head), downgraded and re-applied, and checked for drift against the models on PostgreSQL
 - Live run: Gunicorn + real SMTP delivery + real browser session (register, confirm, sign in,
   edit profile, sign out); no server errors, no secrets in logs

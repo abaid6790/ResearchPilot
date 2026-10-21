@@ -2,6 +2,12 @@
 
 Phases are the project's build milestones, not released versions. No version number has been tagged.
 
+## Phase 13 - Hardening and final verification
+* Default models updated after real-key checks (2026-10-20): Gemini `gemini-flash-lite-latest` (fast, confirmed) and `gemini-flash-latest` (quality, not confirmed), OpenRouter `minimax/minimax-m3.1-flash:free`. Override per tier with `<PROVIDER>_MODEL_QUALITY` / `_FAST`.
+* Opt-in live-service tests (`tests/live`, `RUN_LIVE_TESTS=1`).
+* Repository consistency tests: no inline code in templates, static assets and document links exist, `.env.example` lists the provider keys.
+* Verified migrations (up/down/up, no drift) on a fresh PostgreSQL database, a real Gunicorn smoke test, a dependency audit and a secret scan; results in `FINAL_VERIFICATION.md`.
+
 ## Phase 12 - Legal pages and documentation
 * `docs/legal/`: privacy, cookie, terms, acceptable use, AI usage and limitations, retention, security
   disclosure, contact. They are templates with `[OPERATOR: ...]` placeholders and make no compliance

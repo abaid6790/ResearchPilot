@@ -2,9 +2,9 @@
 
 Status of the build is in [PROGRESS.md](PROGRESS.md). This file lists intentions, not promises.
 
-## Next: Phase 13 - hardening and final verification
-Full review against the specification, dependency audit, load and failure testing of runners and the
-progress stream, accessibility pass, final end-to-end run with real provider keys.
+## First, before real use
+A real end-to-end run with your provider keys (`tests/live`, then one project), an accessibility pass,
+load testing of runners and the progress stream, and legal review of `docs/legal/`.
 
 ## Known gaps worth closing
 * Check `robots.txt` before fetching and offer a per-domain allow/deny list.

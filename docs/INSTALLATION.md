@@ -96,6 +96,8 @@ python -m pytest --cov=. --cov-report=term-missing
 ruff check . && ruff format --check .
 ```
 
+Opt-in live checks: `RUN_LIVE_TESTS=1 python -m pytest tests/live -m live -v` (real keys, real quota).
+
 Set `TEST_DATABASE_URL` (see ENVIRONMENT_SETUP) to run against PostgreSQL. Tests never send real
 email or call external APIs: SMTP tests use a throwaway local server.
 

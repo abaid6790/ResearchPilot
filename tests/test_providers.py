@@ -498,7 +498,10 @@ def test_persistent_validation_failure_falls_back_with_provider_native_schema(fa
 
 def test_openrouter_structured_request_requires_parameter_support(fake, clock):
     fake.always("openrouter", openai_ok(VALID_PLAN))
-    router = make(fake, clock, LLM_PROVIDER_ORDER="openrouter")
+    # A catalogued model that supports strict schemas (the default model is not catalogued).
+    router = make(
+        fake, clock, LLM_PROVIDER_ORDER="openrouter", OPENROUTER_MODEL_QUALITY="apodex/apodex-1.1-mini:free"
+    )
 
     assert ask(router, response_model=Plan).parsed.title == "T"
     payload = fake.calls[0].payload

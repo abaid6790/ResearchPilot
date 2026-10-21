@@ -78,9 +78,14 @@ KNOWN_MODELS: dict[tuple[str, str], ModelSpec] = {
 }
 
 DEFAULT_MODEL_IDS: dict[str, dict[str, str]] = {
-    "gemini": {"quality": "gemini-3.8-flash", "fast": "gemini-3.5-flash-lite"},
+    # "-latest" aliases follow Google's current model, so a retired name cannot break a deployment.
+    # gemini-flash-lite-latest was confirmed with real keys; gemini-flash-latest was not. If it fails,
+    # set GEMINI_MODEL_QUALITY in .env (list your models with check_keys.py or Google's models page).
+    "gemini": {"quality": "gemini-flash-latest", "fast": "gemini-flash-lite-latest"},
     "groq": {"quality": "openai/gpt-oss-120b", "fast": "openai/gpt-oss-20b"},
-    "openrouter": {"quality": "apodex/apodex-1.1-mini:free", "fast": "apodex/apodex-1.1-mini:free"},
+    # Free OpenRouter models change often; this one answered with a real key on 2026-10-20.
+    # Override with OPENROUTER_MODEL_QUALITY / _FAST when it disappears.
+    "openrouter": {"quality": "minimax/minimax-m3.1-flash:free", "fast": "minimax/minimax-m3.1-flash:free"},
 }
 
 # Which tier each agent task uses. Unknown tasks use "quality".

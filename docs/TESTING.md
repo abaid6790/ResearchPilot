@@ -33,14 +33,26 @@ concurrency) is marked with a skip on SQLite.
 | `test_phase9_editor.py` | editor, revisions, optimistic locking, source explorer |
 | `test_phase10_quality_exports.py` | scoring, gates, MD/HTML/DOCX/PDF exports |
 | `test_phase11_settings.py` | preferences, notifications, data export, account deletion |
-| `test_phase12_docs.py` | legal pages, cookie policy vs. configuration, documentation completeness |
+| `test_phase12_docs.py` | legal pages, cookie policy vs. configuration, documentation completeness, no inline code in templates, static assets and document links exist |
+| `tests/live/` | opt-in real-service checks (see below) |
 
 ## Browser checks
 Playwright is in the dev requirements for manual checks (390 px width, dark mode, console and CSP
 errors). The CSP forbids `unsafe-eval`, so `page.wait_for_function` does not work; use
 `wait_for_timeout`. Install browsers with `playwright install chromium`.
 
+## Live (opt-in) tests
+```bash
+RUN_LIVE_TESTS=1 python -m pytest tests/live -m live -v
+```
+`tests/live/` calls the real services with the keys in your environment or `.env`: one tiny request per
+configured LLM key, a router call, one Tavily search, and the safe fetcher against a public page (plus
+a check that it refuses the cloud-metadata address). Each check is skipped when its key is missing.
+They use real quota and need internet access; the routine suite never runs them. Note the fetcher
+check fails on a network whose DNS answers with private addresses (such as some sandboxes or
+corporate proxies), because the SSRF guard correctly refuses those.
+
 ## What is not covered
-No automated test exercises real Gemini, Groq, OpenRouter, Tavily or arbitrary live websites, and
+The routine suite does not exercise real Gemini, Groq, OpenRouter, Tavily or arbitrary live websites, and
 generated report quality is not measured by tests. Before relying on a deployment run
 `flask llm-ping`, `flask search-ping`, then one real project and read the result critically.

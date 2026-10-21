@@ -2,9 +2,9 @@
 
 A multi-agent research and report platform built with Flask, PostgreSQL and LangGraph.
 
-> **Build status: Phases 0-12 of 13 complete.** Phase 13 (hardening and final verification) is next.
+> **Build status: all 13 phases complete.**
 > The application is feature-complete for the specification but has **not** been run against the live
-> LLM and search providers in the build environment; see [docs/PROGRESS.md](docs/PROGRESS.md) and
+> LLM and search providers in the build environment; see [docs/FINAL_VERIFICATION.md](docs/FINAL_VERIFICATION.md) and
 > [docs/TESTING.md](docs/TESTING.md). The legal documents are templates with operator placeholders and
 > need legal review before real use; nothing in them claims legal compliance.
 
@@ -67,4 +67,5 @@ python scripts/check_env.py --live   # also verifies each API key with the provi
 | [docs/TESTING.md](docs/TESTING.md), [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) | Tests and contribution rules |
 | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md), [docs/BACKUP_AND_RESTORE.md](docs/BACKUP_AND_RESTORE.md), [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | Operating it |
 | [docs/legal/](docs/legal/README.md) | Privacy, cookies, terms, acceptable use, AI limits, retention, security disclosure, contact (templates) |
+| [docs/FINAL_VERIFICATION.md](docs/FINAL_VERIFICATION.md) | What was checked against the acceptance criteria, and what was not |
 | [docs/CHANGELOG.md](docs/CHANGELOG.md), [docs/ROADMAP.md](docs/ROADMAP.md), [docs/PROGRESS.md](docs/PROGRESS.md) | History and plans |
